@@ -449,6 +449,10 @@ void setup()
       SERIAL_ECHOLNPGM(STRING_CONFIG_H_AUTHOR);
       SERIAL_ECHOPGM("Compiled: ");
       SERIAL_ECHOLNPGM(__DATE__);
+      #ifdef STRING_GIT_VERSION
+        SERIAL_ECHOPGM("Git version: ");
+        SERIAL_ECHOLNPGM(STRING_GIT_VERSION);
+      #endif
     #endif
   #endif
   SERIAL_ECHO_START;

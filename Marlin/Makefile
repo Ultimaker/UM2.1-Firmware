@@ -54,6 +54,21 @@ UPLOAD_PORT        ?= /dev/arduino
 #Directory used to build files in, contains all the build files, from object files to the final hex file.
 BUILD_DIR          ?= applet
 
+# Use git-revisions for builds
+# Release version
+GIT_VERSION=$(shell git describe --tags --exact-match --dirty 2> /dev/null)
+ifeq ($(strip $(GIT_VERSION)), )
+# Dev version
+GIT_VERSION=$(shell git describe --tags --dirty 2> /dev/null)
+endif
+# Fallback if the above for some reason fail
+ifeq ($(strip $(GIT_VERSION)), )
+GIT_VERSION=$(shell git describe --always 2> /dev/null)
+endif
+ifneq ($(strip $(GIT_VERSION)), )
+GITVER='-D STRING_GIT_VERSION="$(GIT_VERSION)"'
+endif
+
 ############################################################################
 # Below here nothing should be changed...
 
@@ -284,8 +299,8 @@ CTUNING += -DMOTHERBOARD=${HARDWARE_MOTHERBOARD}
 endif
 #CEXTRA = -Wa,-adhlns=$(<:.c=.lst)
 
-CFLAGS := $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CWARN) $(CEXTRA) $(CTUNING)
-CXXFLAGS :=         $(CDEFS) $(CINCS) -O$(OPT) -Wall    $(CEXTRA) $(CTUNING)
+CFLAGS := $(CDEBUG) $(CDEFS) $(CINCS) -O$(OPT) $(CWARN) $(CEXTRA) $(CTUNING) $(GITVER)
+CXXFLAGS :=         $(CDEFS) $(CINCS) -O$(OPT) -Wall    $(CEXTRA) $(CTUNING) $(GITVER)
 #ASFLAGS = -Wa,-adhlns=$(<:.S=.lst),-gstabs
 LDFLAGS = -lm
 
