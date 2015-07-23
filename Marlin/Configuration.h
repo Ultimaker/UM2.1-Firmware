@@ -141,7 +141,7 @@
 #define TEMP_SENSOR_0 20
 #define TEMP_SENSOR_1 20
 #define TEMP_SENSOR_2 0
-#define TEMP_SENSOR_BED 20
+#define TEMP_SENSOR_BED 0
 
 // This makes temp sensor 1 a redundant sensor for sensor 0. If the temperatures difference between these sensors is to high the print will be aborted.
 //#define TEMP_SENSOR_1_AS_REDUNDANT
@@ -335,11 +335,11 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 #define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
 // Travel limits after homing
-#define X_MAX_POS 230
-#define X_MIN_POS 0
-#define Y_MAX_POS 230
+#define X_MAX_POS 122
+#define X_MIN_POS -14
+#define Y_MAX_POS 124
 #define Y_MIN_POS 0
-#define Z_MAX_POS 225
+#define Z_MAX_POS 130
 #define Z_MIN_POS 0
 
 #define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)
@@ -382,7 +382,7 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 #define DEFAULT_EJERK                 5.0    // (mm/sec)
 
 //Length of the bowden tube. Used for the material load/unload procedure.
-#define FILAMANT_BOWDEN_LENGTH        705
+#define FILAMANT_BOWDEN_LENGTH        550
 
 //===========================================================================
 //=============================Additional Features===========================
