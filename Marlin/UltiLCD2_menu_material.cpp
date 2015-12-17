@@ -128,8 +128,10 @@ static void lcd_menu_change_material_preheat()
 
         float old_max_feedrate_e = max_feedrate[E_AXIS];
         float old_retract_acceleration = retract_acceleration;
+        float old_max_e_jerk = max_e_jerk;
         max_feedrate[E_AXIS] = FILAMENT_REVERSAL_SPEED;
         retract_acceleration = FILAMENT_LONG_MOVE_ACCELERATION;
+        max_e_jerk = FILAMENT_LONG_MOVE_JERK;
 
         plan_set_e_position(0);
         plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], -1.0 / volume_to_filament_length[active_extruder], FILAMENT_REVERSAL_SPEED, active_extruder);
@@ -137,6 +139,7 @@ static void lcd_menu_change_material_preheat()
 
         max_feedrate[E_AXIS] = old_max_feedrate_e;
         retract_acceleration = old_retract_acceleration;
+        max_e_jerk = old_max_e_jerk;
 
         currentMenu = lcd_menu_change_material_remove;
         temp = target;
@@ -257,8 +260,10 @@ static void lcd_menu_change_material_insert_wait_user_ready()
     //Override the max feedrate and acceleration values to get a better insert speed and speedup/slowdown
     float old_max_feedrate_e = max_feedrate[E_AXIS];
     float old_retract_acceleration = retract_acceleration;
+    float old_max_e_jerk = max_e_jerk;
     max_feedrate[E_AXIS] = FILAMENT_INSERT_FAST_SPEED;
     retract_acceleration = FILAMENT_LONG_MOVE_ACCELERATION;
+    max_e_jerk = FILAMENT_LONG_MOVE_JERK;
 
     plan_set_e_position(0);
     plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], FILAMENT_FORWARD_LENGTH / volume_to_filament_length[active_extruder], FILAMENT_INSERT_FAST_SPEED, active_extruder);
@@ -266,6 +271,7 @@ static void lcd_menu_change_material_insert_wait_user_ready()
     //Put back origonal values.
     max_feedrate[E_AXIS] = old_max_feedrate_e;
     retract_acceleration = old_retract_acceleration;
+    max_e_jerk = old_max_e_jerk;
 
     lcd_change_to_menu(lcd_menu_change_material_insert_forward);
 }
@@ -892,8 +898,9 @@ void lcd_material_set_material(uint8_t nr, uint8_t e)
 
     material[e].fan_speed = eeprom_read_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(nr));
     material[e].diameter = eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(nr));
-    eeprom_read_block(card.longFilename, EEPROM_MATERIAL_NAME_OFFSET(nr), 8);
-    card.longFilename[8] = '\0';
+    eeprom_read_block(material[e].name, EEPROM_MATERIAL_NAME_OFFSET(nr), MATERIAL_NAME_SIZE);
+    material[e].name[MATERIAL_NAME_SIZE - 1] = '\0';
+    strcpy(card.longFilename, material[e].name);
     for(uint8_t n=0; n<MAX_MATERIAL_TEMPERATURES; n++)
     {
         material[e].temperature[n] = eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(nr, n));
@@ -937,6 +944,9 @@ void lcd_material_read_current_material()
         material[e].diameter = eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
         for(uint8_t n=0; n<MAX_MATERIAL_TEMPERATURES; n++)
             material[active_extruder].temperature[n] = eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e, n));
+
+        eeprom_read_block(material[e].name, EEPROM_MATERIAL_NAME_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), MATERIAL_NAME_SIZE);
+        material[e].name[MATERIAL_NAME_SIZE - 1] = '\0';
     }
 }
 
@@ -953,6 +963,8 @@ void lcd_material_store_current_material()
         eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), material[e].diameter);
         for(uint8_t n=0; n<MAX_MATERIAL_TEMPERATURES; n++)
             eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e, n), material[active_extruder].temperature[n]);
+
+        eeprom_write_block(material[e].name, EEPROM_MATERIAL_NAME_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), MATERIAL_NAME_SIZE);
     }
 }
 
