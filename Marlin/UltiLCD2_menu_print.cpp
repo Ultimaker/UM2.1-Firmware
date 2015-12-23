@@ -685,7 +685,7 @@ static void lcd_menu_print_classic_warning()
 
 static void lcd_menu_print_material_warning()
 {
-    lcd_question_screen(lcd_menu_print_heatup, doStartPrint, PSTR("CONTINUE"), lcd_menu_print_select, doCooldown, PSTR("CANCEL"));
+    lcd_question_screen(lcd_menu_print_heatup, NULL, PSTR("CONTINUE"), lcd_menu_print_select, doCooldown, PSTR("CANCEL"));
 
     lcd_lib_draw_string_centerP(10, PSTR("This file is created"));
     lcd_lib_draw_string_centerP(20, PSTR("for a different"));
