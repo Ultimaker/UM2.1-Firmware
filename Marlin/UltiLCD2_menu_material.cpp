@@ -866,14 +866,14 @@ void lcd_material_reset_defaults()
 
     strcpy_P(buffer, PSTR("CPE"));
     eeprom_write_block(buffer, EEPROM_MATERIAL_NAME_OFFSET(2), 5);
-    eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(2), 250);
+    eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(2), 255);
     eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(2), 60);
     eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(2), 50);
     eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(2), 100);
     eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(2), 2.85);
 
-    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(2, 0), 250);//0.4
-    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(2, 1), 240);//0.25
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(2, 0), 255);//0.4
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(2, 1), 245);//0.25
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(2, 2), 260);//0.6
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(2, 3), 260);//0.8
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(2, 4), 260);//1.0
@@ -1023,11 +1023,11 @@ bool lcd_material_verify_material_settings()
         eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(cnt), 100);
         eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(cnt), 2.85);
 
-        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, 0), 250);//0.4
-        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, 1), 250);//0.25
-        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, 2), 250);//0.6
-        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, 3), 250);//0.8
-        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, 4), 250);//1.0
+        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, 0), 255);//0.4
+        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, 1), 245);//0.25
+        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, 2), 260);//0.6
+        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, 3), 260);//0.8
+        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, 4), 260);//1.0
         
         eeprom_write_byte(EEPROM_MATERIAL_COUNT_OFFSET(), cnt + 1);
     }
