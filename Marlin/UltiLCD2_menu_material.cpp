@@ -865,7 +865,7 @@ void lcd_material_reset_defaults()
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(1, 4), 260);//1.0
 
     strcpy_P(buffer, PSTR("CPE"));
-    eeprom_write_block(buffer, EEPROM_MATERIAL_NAME_OFFSET(2), 5);
+    eeprom_write_block(buffer, EEPROM_MATERIAL_NAME_OFFSET(2), 4);
     eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(2), 255);
     eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(2), 60);
     eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(2), 50);
