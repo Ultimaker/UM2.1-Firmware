@@ -993,12 +993,12 @@ bool lcd_material_verify_material_settings()
         if (eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(cnt)) < 0.1)
             return false;
 
-        for(uint8_t n=0; n<MAX_MATERIAL_TEMPERATURES; n++)
+        for(uint8_t n=0; n<MATERIAL_TEMPERATURE_COUNT; n++)
         {
             if (eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, n)) > HEATER_0_MAXTEMP)
                 return false;
             if (eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, n)) == 0)
-                eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, n), eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(cnt)));
+                return false;
         }
 
         eeprom_read_block(card.longFilename, EEPROM_MATERIAL_NAME_OFFSET(cnt), 8);
