@@ -893,9 +893,6 @@ void lcd_material_reset_defaults()
     eeprom_write_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(0), 70);
     eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(0), 30);
 
-    eeprom_write_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(0), 210);
-    eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(0), 0);
-
     strcpy_P(buffer, PSTR("ABS"));
     eeprom_write_block(buffer, EEPROM_MATERIAL_NAME_OFFSET(1), 4);
     eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(1), 260);
