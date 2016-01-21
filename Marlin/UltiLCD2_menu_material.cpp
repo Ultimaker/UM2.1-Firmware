@@ -119,7 +119,7 @@ void lcd_change_to_menu_change_material(menuFunc_t return_menu)
 
 static void lcd_menu_change_material_preheat()
 {
-    setTargetHotend(material[active_extruder].temperature[0], active_extruder);
+    setTargetHotend(material[active_extruder].change_temperature, active_extruder);
     int16_t temp = degHotend(active_extruder) - 20;
     int16_t target = degTargetHotend(active_extruder) - 20;
     if (temp < 0) temp = 0;
@@ -892,6 +892,9 @@ void lcd_material_reset_defaults()
 
     eeprom_write_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(0), 70);
     eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(0), 30);
+
+    eeprom_write_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(0), 210);
+    eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(0), 0);
 
     strcpy_P(buffer, PSTR("ABS"));
     eeprom_write_block(buffer, EEPROM_MATERIAL_NAME_OFFSET(1), 4);
