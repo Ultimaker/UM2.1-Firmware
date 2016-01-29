@@ -827,6 +827,8 @@ static void lcd_menu_material_temperature_settings()
         }else{
             uint8_t index = SELECTED_SCROLL_MENU_ITEM() - 1;
             LCD_EDIT_SETTING(material[active_extruder].temperature[index], "Temperature", "C", 0, HEATER_0_MAXTEMP - 15);
+            previousMenu = lcd_menu_material_settings;
+            previousEncoderPos = SCROLL_MENU_ITEM_POS(1);
         }
     }
 }
