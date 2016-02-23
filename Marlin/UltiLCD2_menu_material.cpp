@@ -44,6 +44,7 @@ static void lcd_menu_change_material_select_material();
 static void lcd_menu_material_select();
 static void lcd_menu_material_selected();
 static void lcd_menu_material_settings();
+static void lcd_menu_material_temperature_settings();
 static void lcd_menu_material_settings_store();
 
 static void cancelMaterialInsert()
@@ -134,8 +135,10 @@ static void lcd_menu_change_material_preheat()
 
             float old_max_feedrate_e = max_feedrate[E_AXIS];
             float old_retract_acceleration = retract_acceleration;
+            float old_max_e_jerk = max_e_jerk;
             max_feedrate[E_AXIS] = FILAMENT_REVERSAL_SPEED;
             retract_acceleration = FILAMENT_LONG_MOVE_ACCELERATION;
+            max_e_jerk = FILAMENT_LONG_MOVE_JERK;
 
             plan_set_e_position(0);
             plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], -1.0 / volume_to_filament_length[active_extruder], FILAMENT_REVERSAL_SPEED, active_extruder);
@@ -143,6 +146,7 @@ static void lcd_menu_change_material_preheat()
 
             max_feedrate[E_AXIS] = old_max_feedrate_e;
             retract_acceleration = old_retract_acceleration;
+            max_e_jerk = old_max_e_jerk;
 
             currentMenu = lcd_menu_change_material_remove;
             temp = target;
@@ -202,7 +206,7 @@ static void lcd_menu_change_material_remove_wait_user_ready()
 static void lcd_menu_change_material_remove_wait_user()
 {
     LED_GLOW();
-    setTargetHotend(material[active_extruder].temperature, active_extruder);
+    setTargetHotend(material[active_extruder].temperature[0], active_extruder);
 
     lcd_question_screen(NULL, lcd_menu_change_material_remove_wait_user_ready, PSTR("READY"), post_change_material_menu, cancelMaterialInsert, PSTR("CANCEL"));
     lcd_lib_draw_string_centerP(20, PSTR("Remove material"));
@@ -217,7 +221,7 @@ void lcd_change_to_menu_insert_material(menuFunc_t return_menu)
 
 static void lcd_menu_insert_material_preheat()
 {
-    setTargetHotend(material[active_extruder].temperature, active_extruder);
+    setTargetHotend(material[active_extruder].temperature[0], active_extruder);
     int16_t temp = degHotend(active_extruder) - 20;
     int16_t target = degTargetHotend(active_extruder) - 20 - 10;
     if (temp < 0) temp = 0;
@@ -269,8 +273,10 @@ static void lcd_menu_change_material_insert_wait_user_ready()
     //Override the max feedrate and acceleration values to get a better insert speed and speedup/slowdown
     float old_max_feedrate_e = max_feedrate[E_AXIS];
     float old_retract_acceleration = retract_acceleration;
+    float old_max_e_jerk = max_e_jerk;
     max_feedrate[E_AXIS] = FILAMENT_INSERT_FAST_SPEED;
     retract_acceleration = FILAMENT_LONG_MOVE_ACCELERATION;
+    max_e_jerk = FILAMENT_LONG_MOVE_JERK;
 
     plan_set_e_position(0);
     plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], FILAMENT_FORWARD_LENGTH / volume_to_filament_length[active_extruder], FILAMENT_INSERT_FAST_SPEED, active_extruder);
@@ -278,6 +284,7 @@ static void lcd_menu_change_material_insert_wait_user_ready()
     //Put back origonal values.
     max_feedrate[E_AXIS] = old_max_feedrate_e;
     retract_acceleration = old_retract_acceleration;
+    max_e_jerk = old_max_e_jerk;
 
     lcd_change_to_menu(lcd_menu_change_material_insert_forward);
 }
@@ -349,7 +356,7 @@ static void lcd_menu_change_material_select_material_details_callback(uint8_t nr
         c += 5;
         c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_FLOW_OFFSET(nr)), c, PSTR("%"));
     }else{
-        c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(nr)), c, PSTR("C"));
+        c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(nr, 0)), c, PSTR("C"));
 #if TEMP_SENSOR_BED != 0
         *c++ = ' ';
         c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(nr)), c, PSTR("C"));
@@ -427,6 +434,15 @@ static void lcd_menu_material_export()
         ptr = buffer + strlen(buffer);
         int_to_string(eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(n)), ptr, PSTR("\n"));
         card.write_string(buffer);
+        
+        for(uint8_t nozzle=0; nozzle<MATERIAL_TEMPERATURE_COUNT; nozzle++)
+        {
+            strcpy_P(buffer, PSTR("temperature_"));
+            ptr = buffer + strlen(buffer);
+            ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr, PSTR("="));
+            int_to_string(eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(n, nozzle)), ptr, PSTR("\n"));
+            card.write_string(buffer);
+        }
 
 #if TEMP_SENSOR_BED != 0
         strcpy_P(buffer, PSTR("bed_temperature="));
@@ -447,12 +463,12 @@ static void lcd_menu_material_export()
 
         strcpy_P(buffer, PSTR("diameter="));
         ptr = buffer + strlen(buffer);
-        float_to_string(eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(n)), ptr, PSTR("\n\n"));
+        float_to_string(eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(n)), ptr, PSTR("\n"));
         card.write_string(buffer);
 
         strcpy_P(buffer, PSTR("change_temp="));
         ptr = buffer + strlen(buffer);
-        float_to_string(eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(n)), ptr, PSTR("\n\n"));
+        float_to_string(eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(n)), ptr, PSTR("\n"));
         card.write_string(buffer);
         
         strcpy_P(buffer, PSTR("change_wait="));
@@ -549,6 +565,17 @@ static void lcd_menu_material_import()
                 {
                     eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(count), strtol(c, NULL, 10));
                 }
+                for(uint8_t nozzle=0; nozzle<MATERIAL_TEMPERATURE_COUNT; nozzle++)
+                {
+                    char buffer2[32];
+                    strcpy_P(buffer2, PSTR("temperature_"));
+                    char* ptr = buffer2 + strlen(buffer2);
+                    float_to_string(nozzleIndexToNozzleSize(nozzle), ptr);
+                    if (strcmp(buffer, buffer2) == 0)
+                    {
+                        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(count, nozzle), strtol(c, NULL, 10));
+                    }
+                }
             }
         }
     }
@@ -601,7 +628,7 @@ static void lcd_material_select_details_callback(uint8_t nr)
             c += 5;
             c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_FLOW_OFFSET(nr)), c, PSTR("%"));
         }else{
-            c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(nr)), c, PSTR("C"));
+            c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(nr, 0)), c, PSTR("C"));
 #if TEMP_SENSOR_BED != 0
             *c++ = ' ';
             c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(nr)), c, PSTR("C"));
@@ -691,14 +718,23 @@ static char* lcd_material_settings_callback(uint8_t nr)
 
 static void lcd_material_settings_details_callback(uint8_t nr)
 {
-    char buffer[10];
+    char buffer[20];
     buffer[0] = '\0';
     if (nr == 0)
     {
         return;
     }else if (nr == 1)
     {
-        int_to_string(material[active_extruder].temperature, buffer, PSTR("C"));
+        if (led_glow_dir)
+        {
+            char* c = buffer;
+            for(uint8_t n=0; n<3; n++)
+                c = int_to_string(material[active_extruder].temperature[n], c, PSTR("C "));
+        }else{
+            char* c = buffer;
+            for(uint8_t n=3; n<MATERIAL_TEMPERATURE_COUNT; n++)
+                c = int_to_string(material[active_extruder].temperature[n], c, PSTR("C "));
+        }
 #if TEMP_SENSOR_BED != 0
     }else if (nr == 2)
     {
@@ -733,7 +769,10 @@ static void lcd_menu_material_settings()
             lcd_change_to_menu(lcd_menu_material_main);
             lcd_material_store_current_material();
         }else if (IS_SELECTED_SCROLL(1))
-            LCD_EDIT_SETTING(material[active_extruder].temperature, "Temperature", "C", 0, HEATER_0_MAXTEMP - 15);
+        {
+            //LCD_EDIT_SETTING(material[active_extruder].temperature[0], "Temperature", "C", 0, HEATER_0_MAXTEMP - 15);
+            lcd_change_to_menu(lcd_menu_material_temperature_settings);
+        }
 #if TEMP_SENSOR_BED != 0
         else if (IS_SELECTED_SCROLL(2))
             LCD_EDIT_SETTING(material[active_extruder].bed_temperature, "Buildplate Temp.", "C", 0, BED_MAXTEMP - 15);
@@ -750,6 +789,47 @@ static void lcd_menu_material_settings()
             LCD_EDIT_SETTING(material[active_extruder].change_preheat_wait_time, "Change wait time", "sec", 0, 180);
         else if (IS_SELECTED_SCROLL(7 + BED_MENU_OFFSET))
             lcd_change_to_menu(lcd_menu_material_settings_store);
+    }
+}
+
+static char* lcd_material_temperature_settings_callback(uint8_t nr)
+{
+    if (nr == 0)
+    {
+        strcpy_P(card.longFilename, PSTR("< RETURN"));
+    }
+    else
+    {
+        strcpy_P(card.longFilename, PSTR("Temperature: "));
+        float_to_string(nozzleIndexToNozzleSize(nr - 1), card.longFilename + strlen(card.longFilename));
+    }
+    return card.longFilename;
+}
+
+static void lcd_material_settings_temperature_details_callback(uint8_t nr)
+{
+    char buffer[10];
+    buffer[0] = '\0';
+    if (nr == 0)
+        return;
+    int_to_string(material[active_extruder].temperature[nr - 1], buffer, PSTR("C"));
+    lcd_lib_draw_string(5, 53, buffer);
+}
+
+static void lcd_menu_material_temperature_settings()
+{
+    lcd_scroll_menu(PSTR("MATERIAL"), 1 + MATERIAL_TEMPERATURE_COUNT, lcd_material_temperature_settings_callback, lcd_material_settings_temperature_details_callback);
+    if (lcd_lib_button_pressed)
+    {
+        if (IS_SELECTED_SCROLL(0))
+        {
+            lcd_change_to_menu(lcd_menu_material_settings);
+        }else{
+            uint8_t index = SELECTED_SCROLL_MENU_ITEM() - 1;
+            LCD_EDIT_SETTING(material[active_extruder].temperature[index], "Temperature", "C", 0, HEATER_0_MAXTEMP - 15);
+            previousMenu = lcd_menu_material_settings;
+            previousEncoderPos = SCROLL_MENU_ITEM_POS(1);
+        }
     }
 }
 
@@ -808,16 +888,22 @@ void lcd_material_reset_defaults()
     eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(0), 100);
     eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(0), 100);
     eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(0), 2.85);
+    
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(0, 0), 210);//0.4
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(0, 1), 195);//0.25
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(0, 2), 230);//0.6
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(0, 3), 240);//0.8
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(0, 4), 240);//1.0
 
-    eeprom_write_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(0), 210);
-    eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(0), 0);
+    eeprom_write_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(0), 70);
+    eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(0), 30);
 
     eeprom_write_byte(EEPROM_MATERIAL_COUNT_OFFSET(), 1);
 }
 
 void lcd_material_set_material(uint8_t nr, uint8_t e)
 {
-    material[e].temperature = eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(nr));
+    material[e].temperature[0] = eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(nr));
 #if TEMP_SENSOR_BED != 0
     material[e].bed_temperature = eeprom_read_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(nr));
 #endif
@@ -825,10 +911,15 @@ void lcd_material_set_material(uint8_t nr, uint8_t e)
 
     material[e].fan_speed = eeprom_read_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(nr));
     material[e].diameter = eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(nr));
-    eeprom_read_block(card.longFilename, EEPROM_MATERIAL_NAME_OFFSET(nr), 8);
-    card.longFilename[8] = '\0';
-    if (material[e].temperature > HEATER_0_MAXTEMP - 15)
-        material[e].temperature = HEATER_0_MAXTEMP - 15;
+    eeprom_read_block(material[e].name, EEPROM_MATERIAL_NAME_OFFSET(nr), MATERIAL_NAME_SIZE);
+    material[e].name[MATERIAL_NAME_SIZE - 1] = '\0';
+    strcpy(card.longFilename, material[e].name);
+    for(uint8_t n=0; n<MAX_MATERIAL_TEMPERATURES; n++)
+    {
+        material[e].temperature[n] = eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(nr, n));
+        if (material[e].temperature[n] > HEATER_0_MAXTEMP - 15)
+            material[e].temperature[n] = HEATER_0_MAXTEMP - 15;
+    }
 #if TEMP_SENSOR_BED != 0
     if (material[e].bed_temperature > BED_MAXTEMP - 15)
         material[e].bed_temperature = BED_MAXTEMP - 15;
@@ -836,14 +927,14 @@ void lcd_material_set_material(uint8_t nr, uint8_t e)
     material[e].change_temperature = eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(nr));
     material[e].change_preheat_wait_time = eeprom_read_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(nr));
     if (material[e].change_temperature < 10)
-        material[e].change_temperature = material[e].temperature;
+        material[e].change_temperature = material[e].temperature[0];
 
     lcd_material_store_current_material();
 }
 
 void lcd_material_store_material(uint8_t nr)
 {
-    eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(nr), material[active_extruder].temperature);
+    eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(nr), material[active_extruder].temperature[0]);
 #if TEMP_SENSOR_BED != 0
     eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(nr), material[active_extruder].bed_temperature);
 #endif
@@ -852,6 +943,8 @@ void lcd_material_store_material(uint8_t nr)
     eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(nr), material[active_extruder].fan_speed);
     eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(nr), material[active_extruder].diameter);
     //eeprom_write_block(card.longFilename, EEPROM_MATERIAL_NAME_OFFSET(nr), 8);
+    for(uint8_t n=0; n<MAX_MATERIAL_TEMPERATURES; n++)
+        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(nr, n), material[active_extruder].temperature[n]);
 
     eeprom_write_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(nr), material[active_extruder].change_temperature);
     eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(nr), material[active_extruder].change_preheat_wait_time);
@@ -861,7 +954,7 @@ void lcd_material_read_current_material()
 {
     for(uint8_t e=0; e<EXTRUDERS; e++)
     {
-        material[e].temperature = eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
+        //material[e].temperature[0] = eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
 #if TEMP_SENSOR_BED != 0
         material[e].bed_temperature = eeprom_read_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
 #endif
@@ -869,11 +962,16 @@ void lcd_material_read_current_material()
 
         material[e].fan_speed = eeprom_read_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
         material[e].diameter = eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
+        for(uint8_t n=0; n<MAX_MATERIAL_TEMPERATURES; n++)
+            material[active_extruder].temperature[n] = eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e, n));
+
+        eeprom_read_block(material[e].name, EEPROM_MATERIAL_NAME_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), MATERIAL_NAME_SIZE);
+        material[e].name[MATERIAL_NAME_SIZE - 1] = '\0';
         
         material[e].change_temperature = eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
         material[e].change_preheat_wait_time = eeprom_read_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
         if (material[e].change_temperature < 10)
-            material[e].change_temperature = material[e].temperature;
+            material[e].change_temperature = material[e].temperature[0];
     }
 }
 
@@ -881,13 +979,17 @@ void lcd_material_store_current_material()
 {
     for(uint8_t e=0; e<EXTRUDERS; e++)
     {
-        eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), material[e].temperature);
+        eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), material[e].temperature[0]);
 #if TEMP_SENSOR_BED != 0
         eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), material[e].bed_temperature);
 #endif
         eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), material[e].fan_speed);
         eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), material[e].flow);
         eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), material[e].diameter);
+        for(uint8_t n=0; n<MAX_MATERIAL_TEMPERATURES; n++)
+            eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e, n), material[active_extruder].temperature[n]);
+
+        eeprom_write_block(material[e].name, EEPROM_MATERIAL_NAME_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), MATERIAL_NAME_SIZE);
 
         eeprom_write_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), material[e].change_temperature);
         eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), material[e].change_preheat_wait_time);
@@ -917,14 +1019,55 @@ bool lcd_material_verify_material_settings()
         if (eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(cnt)) < 0.1)
             return false;
 
+        for(uint8_t n=0; n<MATERIAL_TEMPERATURE_COUNT; n++)
+        {
+            if (eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, n)) > HEATER_0_MAXTEMP)
+                return false;
+            if (eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, n)) == 0)
+                return false;
+        }
+        
         if (eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(cnt)) > HEATER_0_MAXTEMP || eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(cnt)) < 10)
         {
             //Invalid temperature for change temperature.
-            eeprom_write_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(cnt), eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(cnt)));
-            eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(cnt), 0);
+            eeprom_write_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(cnt), 70);
+            eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(cnt), 30);
         }
     }
     return true;
+}
+
+uint8_t nozzleSizeToTemperatureIndex(float nozzle_size)
+{
+    if (fabs(nozzle_size - 0.25) < 0.1)
+        return 1;
+    if (fabs(nozzle_size - 0.60) < 0.1)
+        return 2;
+    if (fabs(nozzle_size - 0.80) < 0.1)
+        return 3;
+    if (fabs(nozzle_size - 1.00) < 0.1)
+        return 4;
+    
+    //Default to index 0
+    return 0;
+}
+
+float nozzleIndexToNozzleSize(uint8_t nozzle_index)
+{
+    switch(nozzle_index)
+    {
+    case 0:
+        return 0.4;
+    case 1:
+        return 0.25;
+    case 2:
+        return 0.6;
+    case 3:
+        return 0.8;
+    case 4:
+        return 1.0;
+    }
+    return 0.0;
 }
 
 #endif//ENABLE_ULTILCD2
