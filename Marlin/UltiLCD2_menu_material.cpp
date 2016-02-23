@@ -356,7 +356,7 @@ static void lcd_menu_change_material_select_material_details_callback(uint8_t nr
         c += 5;
         c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_FLOW_OFFSET(nr)), c, PSTR("%"));
     }else{
-        c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(nr)), c, PSTR("C"));
+        c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(nr, 0)), c, PSTR("C"));
 #if TEMP_SENSOR_BED != 0
         *c++ = ' ';
         c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(nr)), c, PSTR("C"));
@@ -439,7 +439,7 @@ static void lcd_menu_material_export()
         {
             strcpy_P(buffer, PSTR("temperature_"));
             ptr = buffer + strlen(buffer);
-            float_to_string(nozzleIndexToNozzleSize(nozzle), ptr, PSTR("="));
+            ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr, PSTR("="));
             int_to_string(eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(n, nozzle)), ptr, PSTR("\n"));
             card.write_string(buffer);
         }
@@ -463,12 +463,12 @@ static void lcd_menu_material_export()
 
         strcpy_P(buffer, PSTR("diameter="));
         ptr = buffer + strlen(buffer);
-        float_to_string(eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(n)), ptr, PSTR("\n\n"));
+        float_to_string(eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(n)), ptr, PSTR("\n"));
         card.write_string(buffer);
 
         strcpy_P(buffer, PSTR("change_temp="));
         ptr = buffer + strlen(buffer);
-        float_to_string(eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(n)), ptr, PSTR("\n\n"));
+        float_to_string(eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(n)), ptr, PSTR("\n"));
         card.write_string(buffer);
         
         strcpy_P(buffer, PSTR("change_wait="));
@@ -628,7 +628,7 @@ static void lcd_material_select_details_callback(uint8_t nr)
             c += 5;
             c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_FLOW_OFFSET(nr)), c, PSTR("%"));
         }else{
-            c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(nr)), c, PSTR("C"));
+            c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(nr, 0)), c, PSTR("C"));
 #if TEMP_SENSOR_BED != 0
             *c++ = ' ';
             c = int_to_string(eeprom_read_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(nr)), c, PSTR("C"));
