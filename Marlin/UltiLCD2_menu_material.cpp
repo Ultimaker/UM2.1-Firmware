@@ -123,7 +123,7 @@ static void lcd_menu_change_material_preheat()
 #ifdef USE_CHANGE_TEMPERATURE
     setTargetHotend(material[active_extruder].change_temperature, active_extruder);
 #else
-    setTargetHotend(material[active_extruder].temperature, active_extruder);
+    setTargetHotend(material[active_extruder].temperature[0], active_extruder);
 #endif
     int16_t temp = degHotend(active_extruder) - 20;
     int16_t target = degTargetHotend(active_extruder) - 20;
