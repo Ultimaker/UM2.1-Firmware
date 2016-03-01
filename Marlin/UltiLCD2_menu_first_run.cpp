@@ -282,7 +282,8 @@ static void lcd_menu_first_run_bed_level_paper_right()
 
     SELECT_MAIN_MENU_ITEM(0);
     if (IS_FIRST_RUN_DONE())
-        lcd_info_screen(lcd_menu_first_run_material_select_1, straightToMaterialSelect, PSTR("CONTINUE"));
+        //lcd_info_screen(lcd_menu_first_run_material_select_1, straightToMaterialSelect, PSTR("CONTINUE"));
+        lcd_info_screen(lcd_menu_main, homeBed, PSTR("DONE"));
     else
         lcd_info_screen(lcd_menu_first_run_material_load, homeBed, PSTR("CONTINUE"));
     DRAW_PROGRESS_NR_IF_NOT_DONE(10);
