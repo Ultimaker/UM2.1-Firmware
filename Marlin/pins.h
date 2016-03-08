@@ -1201,8 +1201,8 @@
 #define SDPOWER            -1
 #define SDSS               53
 #define MAX6675_SS         13
-#define LED_PIN            8
-#define FAN_PIN            7
+#define LED_PIN            7
+#define FAN_PIN            8
 #define PS_ON_PIN          24
 #define KILL_PIN           -1
 #define SUICIDE_PIN        -1  //PIN that has to be turned on right after start, to keep power flowing.
