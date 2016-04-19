@@ -1067,7 +1067,7 @@ bool lcd_material_verify_material_settings()
 
 uint8_t nozzleSizeToTemperatureIndex(float nozzle_size)
 {
-    if (fabs(nozzle_size - 0.25) < 0.1)
+    if (fabs(nozzle_size - 0.25) < 0.05)
         return 1;
     if (fabs(nozzle_size - 0.60) < 0.1)
         return 2;
