@@ -293,7 +293,7 @@ void Config_ResetDefault()
     led_brightness_level = 100;
     led_mode = LED_MODE_ALWAYS_ON;
     #endif
-    retract_length = 4.5;
+    retract_length = 6.5;
     retract_feedrate = 25 * 60;
 
 SERIAL_ECHO_START;

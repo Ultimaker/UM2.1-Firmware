@@ -929,12 +929,12 @@ void lcd_material_reset_defaults()
     strcpy_P(buffer, PSTR("ABS"));
     eeprom_write_block(buffer, EEPROM_MATERIAL_NAME_OFFSET(1), 4);
     eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(1), 260);
-    eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(1), 90);
+    eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(1), 80);
     eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(1), 100);
     eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(1), 107);
     eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(1), 2.85);
 
-    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(1, 0), 255);//0.4
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(1, 0), 250);//0.4
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(1, 1), 245);//0.25
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(1, 2), 260);//0.6
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(1, 3), 260);//0.8
@@ -945,13 +945,13 @@ void lcd_material_reset_defaults()
 
     strcpy_P(buffer, PSTR("CPE"));
     eeprom_write_block(buffer, EEPROM_MATERIAL_NAME_OFFSET(2), 4);
-    eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(2), 255);
-    eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(2), 60);
-    eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(2), 50);
+    eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(2), 250);
+    eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(2), 70);
+    eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(2), 100);
     eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(2), 100);
     eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(2), 2.85);
 
-    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(2, 0), 255);//0.4
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(2, 0), 250);//0.4
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(2, 1), 245);//0.25
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(2, 2), 260);//0.6
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(2, 3), 260);//0.8
