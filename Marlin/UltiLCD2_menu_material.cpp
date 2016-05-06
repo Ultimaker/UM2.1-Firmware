@@ -977,7 +977,24 @@ void lcd_material_reset_defaults()
     eeprom_write_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(3), 85);
     eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(3), 15);
 
-    eeprom_write_byte(EEPROM_MATERIAL_COUNT_OFFSET(), 4);
+    strcpy_P(buffer, PSTR("Nylon"));
+    eeprom_write_block(buffer, EEPROM_MATERIAL_NAME_OFFSET(4), 3);
+    eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(4), 250);
+    eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(4), 60);
+    eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(4), 100);
+    eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(4), 100);
+    eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(4), 2.85);
+
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(4, 0), 250);//0.4
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(4, 1), 240);//0.25
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(4, 2), 255);//0.6
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(4, 3), 260);//0.8
+    eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(4, 4), 260);//1.0
+
+    eeprom_write_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(4), 85);
+    eeprom_write_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(4), 15);
+
+    eeprom_write_byte(EEPROM_MATERIAL_COUNT_OFFSET(), 5);
 
     for(uint8_t n=MATERIAL_TEMPERATURE_COUNT; n<MAX_MATERIAL_TEMPERATURES; n++)
     {
