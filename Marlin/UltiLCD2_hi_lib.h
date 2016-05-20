@@ -120,4 +120,11 @@ extern uint8_t led_glow_dir;
 #define BED_MENU_OFFSET 0
 #endif
 
+#ifdef USE_CHANGE_TEMPERATURE
+#define USE_CHANGE_TEMPERATURE_MENU_OFFSET 2
+#else
+#define USE_CHANGE_TEMPERATURE_MENU_OFFSET 0
+#endif
+
+
 #endif//ULTI_LCD2_HI_LIB_H

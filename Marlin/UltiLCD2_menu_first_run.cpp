@@ -270,12 +270,6 @@ static void homeBed()
     enquecommand_P(PSTR("G28 Z0"));
 }
 
-static void straightToMaterialSelect()
-{
-    homeBed();
-    lcd_material_reset_defaults();
-}
-
 static void lcd_menu_first_run_bed_level_paper_right()
 {
     LED_GLOW();
