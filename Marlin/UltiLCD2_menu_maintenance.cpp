@@ -17,7 +17,6 @@ static void lcd_menu_maintenance_advanced();
 static void lcd_menu_maintenance_advanced_heatup();
 static void lcd_menu_maintenance_led();
 static void lcd_menu_maintenance_extrude();
-static void lcd_menu_maintenance_retraction();
 static void lcd_menu_advanced_version();
 static void lcd_menu_advanced_stats();
 static void lcd_menu_maintenance_motion();
@@ -77,14 +76,12 @@ static char* lcd_advanced_item(uint8_t nr)
     else if (nr == 6 + BED_MENU_OFFSET + EXTRUDERS * 2)
         strcpy_P(card.longFilename, PSTR("Set fan speed"));
     else if (nr == 7 + BED_MENU_OFFSET + EXTRUDERS * 2)
-        strcpy_P(card.longFilename, PSTR("Retraction settings"));
-    else if (nr == 8 + BED_MENU_OFFSET + EXTRUDERS * 2)
         strcpy_P(card.longFilename, PSTR("Motion settings"));
-    else if (nr == 9 + BED_MENU_OFFSET + EXTRUDERS * 2)
+    else if (nr == 8 + BED_MENU_OFFSET + EXTRUDERS * 2)
         strcpy_P(card.longFilename, PSTR("Version"));
-    else if (nr == 10 + BED_MENU_OFFSET + EXTRUDERS * 2)
+    else if (nr == 9 + BED_MENU_OFFSET + EXTRUDERS * 2)
         strcpy_P(card.longFilename, PSTR("Runtime stats"));
-    else if (nr == 11 + BED_MENU_OFFSET + EXTRUDERS * 2)
+    else if (nr == 10 + BED_MENU_OFFSET + EXTRUDERS * 2)
         strcpy_P(card.longFilename, PSTR("Factory reset"));
     else
         strcpy_P(card.longFilename, PSTR("???"));
@@ -117,7 +114,7 @@ static void lcd_advanced_details(uint8_t nr)
     }else if (nr == 6 + BED_MENU_OFFSET + EXTRUDERS * 2)
     {
         int_to_string(int(fanSpeed) * 100 / 255, buffer, PSTR("%"));
-    }else if (nr == 9 + BED_MENU_OFFSET + EXTRUDERS * 2)
+    }else if (nr == 8 + BED_MENU_OFFSET + EXTRUDERS * 2)
     {
         lcd_lib_draw_stringP(5, 53, PSTR(STRING_CONFIG_H_AUTHOR));
         return;
@@ -136,7 +133,7 @@ static void lcd_menu_maintenance_advanced_return()
 
 static void lcd_menu_maintenance_advanced()
 {
-    lcd_scroll_menu(PSTR("ADVANCED"), 12 + BED_MENU_OFFSET + EXTRUDERS * 2, lcd_advanced_item, lcd_advanced_details);
+    lcd_scroll_menu(PSTR("ADVANCED"), 11 + BED_MENU_OFFSET + EXTRUDERS * 2, lcd_advanced_item, lcd_advanced_details);
     if (lcd_lib_button_pressed)
     {
         if (IS_SELECTED_SCROLL(0))
@@ -203,14 +200,12 @@ static void lcd_menu_maintenance_advanced()
         else if (IS_SELECTED_SCROLL(6 + BED_MENU_OFFSET + EXTRUDERS * 2))
             LCD_EDIT_SETTING_BYTE_PERCENT(fanSpeed, "Fan speed", "%", 0, 100);
         else if (IS_SELECTED_SCROLL(7 + BED_MENU_OFFSET + EXTRUDERS * 2))
-            lcd_change_to_menu(lcd_menu_maintenance_retraction, SCROLL_MENU_ITEM_POS(0));
-        else if (IS_SELECTED_SCROLL(8 + BED_MENU_OFFSET + EXTRUDERS * 2))
             lcd_change_to_menu(lcd_menu_maintenance_motion, SCROLL_MENU_ITEM_POS(0));
-        else if (IS_SELECTED_SCROLL(9 + BED_MENU_OFFSET + EXTRUDERS * 2))
+        else if (IS_SELECTED_SCROLL(8 + BED_MENU_OFFSET + EXTRUDERS * 2))
             lcd_change_to_menu(lcd_menu_advanced_version, SCROLL_MENU_ITEM_POS(0));
-        else if (IS_SELECTED_SCROLL(10 + BED_MENU_OFFSET + EXTRUDERS * 2))
+        else if (IS_SELECTED_SCROLL(9 + BED_MENU_OFFSET + EXTRUDERS * 2))
             lcd_change_to_menu(lcd_menu_advanced_stats, SCROLL_MENU_ITEM_POS(0));
-        else if (IS_SELECTED_SCROLL(11 + BED_MENU_OFFSET + EXTRUDERS * 2))
+        else if (IS_SELECTED_SCROLL(10 + BED_MENU_OFFSET + EXTRUDERS * 2))
             lcd_change_to_menu(lcd_menu_advanced_factory_reset, SCROLL_MENU_ITEM_POS(1));
     }
 }
@@ -357,49 +352,6 @@ static void lcd_menu_advanced_factory_reset()
     lcd_lib_draw_string_centerP(10, PSTR("Reset everything"));
     lcd_lib_draw_string_centerP(20, PSTR("to default?"));
     lcd_lib_update_screen();
-}
-
-
-static char* lcd_retraction_item(uint8_t nr)
-{
-    if (nr == 0)
-        strcpy_P(card.longFilename, PSTR("< RETURN"));
-    else if (nr == 1)
-        strcpy_P(card.longFilename, PSTR("Retract length"));
-    else if (nr == 2)
-        strcpy_P(card.longFilename, PSTR("Retract speed"));
-    else
-        strcpy_P(card.longFilename, PSTR("???"));
-    return card.longFilename;
-}
-
-static void lcd_retraction_details(uint8_t nr)
-{
-    char buffer[16];
-    if (nr == 0)
-        return;
-    else if(nr == 1)
-        float_to_string(retract_length, buffer, PSTR("mm"));
-    else if(nr == 2)
-        int_to_string(retract_feedrate / 60 + 0.5, buffer, PSTR("mm/sec"));
-    lcd_lib_draw_string(5, 53, buffer);
-}
-
-static void lcd_menu_maintenance_retraction()
-{
-    lcd_scroll_menu(PSTR("RETRACTION"), 3, lcd_retraction_item, lcd_retraction_details);
-    if (lcd_lib_button_pressed)
-    {
-        if (IS_SELECTED_SCROLL(0))
-        {
-            Config_StoreSettings();
-            lcd_change_to_menu(lcd_menu_maintenance_advanced, SCROLL_MENU_ITEM_POS(6 + EXTRUDERS * 2));
-        }
-        else if (IS_SELECTED_SCROLL(1))
-            LCD_EDIT_SETTING_FLOAT001(retract_length, "Retract length", "mm", 0, 50);
-        else if (IS_SELECTED_SCROLL(2))
-            LCD_EDIT_SETTING_SPEED(retract_feedrate, "Retract speed", "mm/sec", 0, max_feedrate[E_AXIS] * 60);
-    }
 }
 
 static char* lcd_motion_item(uint8_t nr)
