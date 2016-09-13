@@ -357,6 +357,48 @@ static void lcd_menu_advanced_factory_reset()
     lcd_lib_update_screen();
 }
 
+static char* lcd_retraction_item(uint8_t nr)
+{
+    if (nr == 0)
+        strcpy_P(card.longFilename, PSTR("< RETURN"));
+    else if (nr == 1)
+        strcpy_P(card.longFilename, PSTR("Retract length"));
+    else if (nr == 2)
+        strcpy_P(card.longFilename, PSTR("Retract speed"));
+    else
+        strcpy_P(card.longFilename, PSTR("???"));
+    return card.longFilename;
+}
+
+static void lcd_retraction_details(uint8_t nr)
+{
+    char buffer[16];
+    if (nr == 0)
+        return;
+    else if(nr == 1)
+        float_to_string(retract_length, buffer, PSTR("mm"));
+    else if(nr == 2)
+        int_to_string(retract_feedrate / 60 + 0.5, buffer, PSTR("mm/sec"));
+    lcd_lib_draw_string(5, 53, buffer);
+}
+
+static void lcd_menu_maintenance_retraction()
+{
+    lcd_scroll_menu(PSTR("RETRACTION"), 3, lcd_retraction_item, lcd_retraction_details);
+    if (lcd_lib_button_pressed)
+    {
+        if (IS_SELECTED_SCROLL(0))
+        {
+            Config_StoreSettings();
+            lcd_change_to_menu(lcd_menu_maintenance_advanced, SCROLL_MENU_ITEM_POS(6 + BED_MENU_OFFSET + EXTRUDERS * 2));
+        }
+        else if (IS_SELECTED_SCROLL(1))
+            LCD_EDIT_SETTING_FLOAT001(retract_length, "Retract length", "mm", 0, 50);
+        else if (IS_SELECTED_SCROLL(2))
+            LCD_EDIT_SETTING_SPEED(retract_feedrate, "Retract speed", "mm/sec", 0, max_feedrate[E_AXIS] * 60);
+    }
+}
+
 static char* lcd_motion_item(uint8_t nr)
 {
     if (nr == 0)
@@ -417,7 +459,7 @@ static void lcd_menu_maintenance_motion()
             digipot_current(1, motor_current_setting[1]);
             digipot_current(2, motor_current_setting[2]);
             Config_StoreSettings();
-            lcd_change_to_menu(lcd_menu_maintenance_advanced, SCROLL_MENU_ITEM_POS(7));
+            lcd_change_to_menu(lcd_menu_maintenance_advanced, SCROLL_MENU_ITEM_POS(7 + BED_MENU_OFFSET + EXTRUDERS * 2));
         }
         else if (IS_SELECTED_SCROLL(1))
             LCD_EDIT_SETTING_FLOAT100(acceleration, "Acceleration", "mm/sec^2", 0, 20000);
