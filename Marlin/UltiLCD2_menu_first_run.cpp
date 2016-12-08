@@ -275,6 +275,7 @@ static void lcd_menu_first_run_bed_level_paper_right()
 
     SELECT_MAIN_MENU_ITEM(0);
     if (IS_FIRST_RUN_DONE())
+        //lcd_info_screen(lcd_menu_first_run_material_select_1, straightToMaterialSelect, PSTR("CONTINUE"));
         lcd_info_screen(lcd_menu_main, homeBed, PSTR("DONE"));
     else
         lcd_info_screen(lcd_menu_first_run_material_load, homeBed, PSTR("CONTINUE"));
@@ -383,7 +384,7 @@ static void lcd_menu_first_run_material_select_2()
 
 static void lcd_menu_first_run_material_load_heatup()
 {
-    setTargetHotend(material[0].temperature, 0);
+    setTargetHotend(material[0].temperature[0], 0);
     int16_t temp = degHotend(0) - 20;
     int16_t target = degTargetHotend(0) - 10 - 20;
     if (temp < 0) temp = 0;

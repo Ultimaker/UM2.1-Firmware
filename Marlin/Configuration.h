@@ -204,9 +204,9 @@
     //#define  DEFAULT_Kd 100.0
 
 // Ultimaker2 JarJar
-    #define  DEFAULT_Kp 12.03
-    #define  DEFAULT_Ki 1.11
-    #define  DEFAULT_Kd 32.73
+    #define  DEFAULT_Kp 10.03
+    #define  DEFAULT_Ki 1.50
+    #define  DEFAULT_Kd 70.0
 
 // Makergear
 //    #define  DEFAULT_Kp 7.0
@@ -328,7 +328,7 @@ const bool Z_ENDSTOPS_INVERTING = true; // set to true to invert the logic of th
 #define INVERT_Y_DIR false    // for Mendel set to true, for Orca set to false
 #define INVERT_Z_DIR true     // for Mendel set to false, for Orca set to true
 #define INVERT_E0_DIR true    // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E1_DIR true    // for direct drive extruder v9 set to true, for geared extruder set to false
+#define INVERT_E1_DIR false   // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E2_DIR true    // for direct drive extruder v9 set to true, for geared extruder set to false
 
 // ENDSTOP SETTINGS:
