@@ -772,6 +772,10 @@ static void axis_is_at_home(int axis) {
   max_pos[axis] =          base_max_pos(axis);// + add_homeing[axis];
 }
 
+// Move the given axis to the home position.
+// Movement is in two parts:
+// 1) A quick move until the endstop switch is reached.
+// 2) A short backup and then slow move to home for accurately determining the home position.
 static void homeaxis(int axis) {
 #define HOMEAXIS_DO(LETTER) \
   ((LETTER##_MIN_PIN > -1 && LETTER##_HOME_DIR==-1) || (LETTER##_MAX_PIN > -1 && LETTER##_HOME_DIR==1))
@@ -785,6 +789,7 @@ static void homeaxis(int axis) {
       if (servo_endstops[axis] > -1) servos[servo_endstops[axis]].write(servo_endstop_angles[axis * 2]);
     #endif
 
+    // Do a fast run to the home position.
     current_position[axis] = 0;
     plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
     destination[axis] = 1.5 * max_length(axis) * home_dir(axis);
@@ -795,11 +800,14 @@ static void homeaxis(int axis) {
     {
         if (axis == Z_AXIS)
         {
+            //Move the bed upwards, as most likely something is stuck under the bed when we cannot reach the endstop.
+            // We need to move up, as the Z screw is quite strong and will lodge the bed into a position where it is hard to remove by hand.
             current_position[axis] = 0;
             plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-            destination[axis] = -home_retract_mm(axis) * home_dir(axis) * 10.0;
+            destination[axis] = -5 * home_dir(axis);
             plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
-            st_synchronize();
+            //Disable the motor power so the bed can be moved by hand
+            finishAndDisableSteppers();
 
             SERIAL_ERROR_START;
             SERIAL_ERRORLNPGM("Endstop not pressed after homing down. Endstop broken?");
@@ -812,12 +820,14 @@ static void homeaxis(int axis) {
         return;
     }
 
+    // Move back a little bit.
     current_position[axis] = 0;
     plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
     destination[axis] = -home_retract_mm(axis) * home_dir(axis);
     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
     st_synchronize();
 
+    // Verify the endstop switch isn't stuck.
     bool endstop_pressed = false;
     switch(axis)
     {
@@ -846,7 +856,7 @@ static void homeaxis(int axis) {
         #endif
         break;
     }
-    if (endstop_pressed && axis == Z_AXIS)
+    if (endstop_pressed && axis == Z_AXIS)  // Temporarily verify Z-axis only until we know what incorrectly triggers the X- and Y-switches errors.
     {
         SERIAL_ERROR_START;
         SERIAL_ERRORLNPGM("Endstop still pressed after backing off. Endstop stuck?");
@@ -858,6 +868,7 @@ static void homeaxis(int axis) {
         return;
     }
 
+    // Do a second run at the home position, but now slower to be more accurate.
     destination[axis] = 2*home_retract_mm(axis) * home_dir(axis);
     feedrate = homing_feedrate[axis]/3;
     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
@@ -1055,7 +1066,8 @@ void process_commands()
         current_position[X_AXIS] = 0;current_position[Y_AXIS] = 0;
 
         plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-        destination[X_AXIS] = 1.5 * X_MAX_LENGTH * X_HOME_DIR;destination[Y_AXIS] = 1.5 * Y_MAX_LENGTH * Y_HOME_DIR;
+        destination[X_AXIS] = 1.5 * X_MAX_LENGTH * X_HOME_DIR;
+	destination[Y_AXIS] = 1.5 * Y_MAX_LENGTH * Y_HOME_DIR;
         feedrate = homing_feedrate[X_AXIS];
         if(homing_feedrate[Y_AXIS]<feedrate)
           feedrate =homing_feedrate[Y_AXIS];
@@ -1313,7 +1325,7 @@ void process_commands()
         int pin_number = LED_PIN;
         if (code_seen('P') && pin_status >= 0 && pin_status <= 255)
           pin_number = code_value();
-        for(int8_t i = 0; i < (int8_t)sizeof(sensitive_pins); i++)
+        for(uint8_t i = 0; i < (sizeof(sensitive_pins)/sizeof(sensitive_pins[0])); ++i)
         {
           if (sensitive_pins[i] == pin_number)
           {
@@ -1327,8 +1339,6 @@ void process_commands()
       #endif
         if (pin_number > -1)
         {
-          pinMode(pin_number, OUTPUT);
-          digitalWrite(pin_number, pin_status);
           analogWrite(pin_number, pin_status);
         }
       }
@@ -1424,7 +1434,7 @@ void process_commands()
               }
               else
               {
-                 SERIAL_PROTOCOLLN( "?" );
+                 SERIAL_PROTOCOLLNPGM( "?" );
               }
             #else
               SERIAL_PROTOCOLLN("");
@@ -1641,30 +1651,30 @@ void process_commands()
       enable_endstops(true) ;
       break;
     case 119: // M119
-    SERIAL_PROTOCOLLN(MSG_M119_REPORT);
+    SERIAL_PROTOCOLLNPGM(MSG_M119_REPORT);
       #if defined(X_MIN_PIN) && X_MIN_PIN > -1
         SERIAL_PROTOCOLPGM(MSG_X_MIN);
-        SERIAL_PROTOCOLLN(((READ(X_MIN_PIN)^X_ENDSTOPS_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+        serialprintPGM(((READ(X_MIN_PIN)^X_ENDSTOPS_INVERTING)?PSTR(MSG_ENDSTOP_HIT):PSTR(MSG_ENDSTOP_OPEN)));
       #endif
       #if defined(X_MAX_PIN) && X_MAX_PIN > -1
         SERIAL_PROTOCOLPGM(MSG_X_MAX);
-        SERIAL_PROTOCOLLN(((READ(X_MAX_PIN)^X_ENDSTOPS_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+        serialprintPGM(((READ(X_MAX_PIN)^X_ENDSTOPS_INVERTING)?PSTR(MSG_ENDSTOP_HIT):PSTR(MSG_ENDSTOP_OPEN)));
       #endif
       #if defined(Y_MIN_PIN) && Y_MIN_PIN > -1
         SERIAL_PROTOCOLPGM(MSG_Y_MIN);
-        SERIAL_PROTOCOLLN(((READ(Y_MIN_PIN)^Y_ENDSTOPS_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+        serialprintPGM(((READ(Y_MIN_PIN)^Y_ENDSTOPS_INVERTING)?PSTR(MSG_ENDSTOP_HIT):PSTR(MSG_ENDSTOP_OPEN)));
       #endif
       #if defined(Y_MAX_PIN) && Y_MAX_PIN > -1
         SERIAL_PROTOCOLPGM(MSG_Y_MAX);
-        SERIAL_PROTOCOLLN(((READ(Y_MAX_PIN)^Y_ENDSTOPS_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+        serialprintPGM(((READ(Y_MAX_PIN)^Y_ENDSTOPS_INVERTING)?PSTR(MSG_ENDSTOP_HIT):PSTR(MSG_ENDSTOP_OPEN)));
       #endif
       #if defined(Z_MIN_PIN) && Z_MIN_PIN > -1
         SERIAL_PROTOCOLPGM(MSG_Z_MIN);
-        SERIAL_PROTOCOLLN(((READ(Z_MIN_PIN)^Z_ENDSTOPS_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+        serialprintPGM(((READ(Z_MIN_PIN)^Z_ENDSTOPS_INVERTING)?PSTR(MSG_ENDSTOP_HIT):PSTR(MSG_ENDSTOP_OPEN)));
       #endif
       #if defined(Z_MAX_PIN) && Z_MAX_PIN > -1
         SERIAL_PROTOCOLPGM(MSG_Z_MAX);
-        SERIAL_PROTOCOLLN(((READ(Z_MAX_PIN)^Z_ENDSTOPS_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+        serialprintPGM(((READ(Z_MAX_PIN)^Z_ENDSTOPS_INVERTING)?PSTR(MSG_ENDSTOP_HIT):PSTR(MSG_ENDSTOP_OPEN)));
       #endif
       break;
       //TODO: update for all axis, use for loop
@@ -1777,9 +1787,9 @@ void process_commands()
       SERIAL_ECHOPGM(MSG_HOTEND_OFFSET);
       for(tmp_extruder = 0; tmp_extruder < EXTRUDERS; tmp_extruder++)
       {
-         SERIAL_ECHO(" ");
+         SERIAL_ECHOPGM(" ");
          SERIAL_ECHO(extruder_offset[X_AXIS][tmp_extruder]);
-         SERIAL_ECHO(",");
+         SERIAL_ECHOPGM(",");
          SERIAL_ECHO(extruder_offset[Y_AXIS][tmp_extruder]);
       }
       SERIAL_ECHOLN("");
@@ -1816,16 +1826,16 @@ void process_commands()
           }
           else {
             SERIAL_ECHO_START;
-            SERIAL_ECHO("Servo ");
+            SERIAL_ECHOPGM("Servo ");
             SERIAL_ECHO(servo_index);
-            SERIAL_ECHOLN(" out of range");
+            SERIAL_ECHOLNPGM(" out of range");
           }
         }
         else if (servo_index >= 0) {
-          SERIAL_PROTOCOL(MSG_OK);
-          SERIAL_PROTOCOL(" Servo ");
+          SERIAL_PROTOCOLPGM(MSG_OK);
+          SERIAL_PROTOCOLPGM(" Servo ");
           SERIAL_PROTOCOL(servo_index);
-          SERIAL_PROTOCOL(": ");
+          SERIAL_PROTOCOLPGM(": ");
           SERIAL_PROTOCOL(servos[servo_index].read());
           SERIAL_PROTOCOLLN("");
         }
@@ -1833,17 +1843,19 @@ void process_commands()
       break;
     #endif // NUM_SERVOS > 0
 
-    #if LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) )
+    #if LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(ENABLE_ULTILCD2) )
     case 300: // M300
     {
-      int beepS = code_seen('S') ? code_value() : 110;
-      int beepP = code_seen('P') ? code_value() : 1000;
+      unsigned int beepS = code_seen('S') ? code_value() : 110;  //frequency Hz
+      unsigned int beepP = code_seen('P') ? code_value() : 1000; //duration ms
       if (beepS > 0)
       {
         #if BEEPER > 0
-          tone(BEEPER, beepS);
-          delay(beepP);
-          noTone(BEEPER);
+          // don't use tone libs that might mess with our timers
+          uint32_t notch = 500000 / beepS;
+          if(beepP > 4000) beepP = 4000; // prevent watchdog from tripping
+          uint32_t loops = ((((uint32_t) beepP) * 500) / notch);
+          for(uint32_t _i=0;_i<loops;_i++) { WRITE(BEEPER, HIGH); delayMicroseconds(notch); WRITE(BEEPER, LOW); delayMicroseconds(notch); }
         #elif defined(ULTRALCD)
           lcd_buzz(beepS, beepP);
         #endif
@@ -1868,15 +1880,15 @@ void process_commands()
         #endif
 
         updatePID();
-        SERIAL_PROTOCOL(MSG_OK);
-        SERIAL_PROTOCOL(" p:");
+        SERIAL_PROTOCOLPGM(MSG_OK);
+        SERIAL_PROTOCOLPGM(" p:");
         SERIAL_PROTOCOL(Kp);
-        SERIAL_PROTOCOL(" i:");
+        SERIAL_PROTOCOLPGM(" i:");
         SERIAL_PROTOCOL(unscalePID_i(Ki));
-        SERIAL_PROTOCOL(" d:");
+        SERIAL_PROTOCOLPGM(" d:");
         SERIAL_PROTOCOL(unscalePID_d(Kd));
         #ifdef PID_ADD_EXTRUSION_RATE
-        SERIAL_PROTOCOL(" c:");
+        SERIAL_PROTOCOLPGM(" c:");
         //Kc does not have scaling applied above, or in resetting defaults
         SERIAL_PROTOCOL(Kc);
         #endif
@@ -1892,12 +1904,12 @@ void process_commands()
         if(code_seen('D')) bedKd = scalePID_d(code_value());
 
         updatePID();
-        SERIAL_PROTOCOL(MSG_OK);
-        SERIAL_PROTOCOL(" p:");
+        SERIAL_PROTOCOLPGM(MSG_OK);
+        SERIAL_PROTOCOLPGM(" p:");
         SERIAL_PROTOCOL(bedKp);
-        SERIAL_PROTOCOL(" i:");
+        SERIAL_PROTOCOLPGM(" i:");
         SERIAL_PROTOCOL(unscalePID_i(bedKi));
-        SERIAL_PROTOCOL(" d:");
+        SERIAL_PROTOCOLPGM(" d:");
         SERIAL_PROTOCOL(unscalePID_d(bedKd));
         SERIAL_PROTOCOLLN("");
       }
@@ -2189,7 +2201,7 @@ void process_commands()
     case 605: // M605 store current set values
     {
       uint8_t tmp_select;
-      if (code_seen('S')) 
+      if (code_seen('S'))
       {
         tmp_select = code_value();
         if (tmp_select>9) tmp_select=9;
@@ -2223,7 +2235,7 @@ void process_commands()
     case 606: // M606 recall saved values
     {
       uint8_t tmp_select;
-      if (code_seen('S')) 
+      if (code_seen('S'))
       {
         tmp_select = code_value();
         if (tmp_select>9) tmp_select=9;
@@ -2323,20 +2335,30 @@ void process_commands()
     case 10000://M10000 - Clear the whole LCD
         lcd_lib_clear();
         break;
-    case 10001://M10001 - Draw text on LCD, M10002 X0 Y0 SText
+    case 10001://M10001 - Draw text on LCD, M10002 X0 Y0 SText (when X is left out, it will draw centered)
         {
-        uint8_t x = 0, y = 0;
-        if (code_seen('X')) x = code_value_long();
-        if (code_seen('Y')) y = code_value_long();
-        if (code_seen('S')) lcd_lib_draw_string(x, y, &cmdbuffer[bufindr][strchr_pointer - cmdbuffer[bufindr] + 1]);
+          uint8_t x = 0, y = 0;
+          if (code_seen('X')) {
+            x = code_value_long();
+            if (code_seen('Y')) y = code_value_long();
+             if (code_seen('S')) lcd_lib_draw_string(x, y, &cmdbuffer[bufindr][strchr_pointer - cmdbuffer[bufindr] + 1]);
+          } else {
+            if (code_seen('Y')) y = code_value_long();
+             if (code_seen('S')) lcd_lib_draw_string_center(y,&cmdbuffer[bufindr][strchr_pointer - cmdbuffer[bufindr] + 1]);
+          }
         }
         break;
-    case 10002://M10002 - Draw inverted text on LCD, M10002 X0 Y0 SText
+    case 10002://M10002 - Draw inverted text on LCD, M10002 X0 Y0 SText (when X is left out, it will draw centered)
         {
-        uint8_t x = 0, y = 0;
-        if (code_seen('X')) x = code_value_long();
-        if (code_seen('Y')) y = code_value_long();
-        if (code_seen('S')) lcd_lib_clear_string(x, y, &cmdbuffer[bufindr][strchr_pointer - cmdbuffer[bufindr] + 1]);
+          uint8_t x = 0, y = 0;
+          if (code_seen('X')) {
+            x = code_value_long();
+            if (code_seen('Y')) y = code_value_long();
+             if (code_seen('S')) lcd_lib_clear_string(x, y, &cmdbuffer[bufindr][strchr_pointer - cmdbuffer[bufindr] + 1]);
+          } else {
+            if (code_seen('Y')) y = code_value_long();
+             if (code_seen('S')) lcd_lib_clear_string_center(y, &cmdbuffer[bufindr][strchr_pointer - cmdbuffer[bufindr] + 1]);
+          }
         }
         break;
     case 10003://M10003 - Draw square on LCD, M10003 X1 Y1 W10 H10
@@ -2390,9 +2412,9 @@ void process_commands()
     tmp_extruder = code_value();
     if(tmp_extruder >= EXTRUDERS) {
       SERIAL_ECHO_START;
-      SERIAL_ECHO("T");
+      SERIAL_ECHOPGM("T");
       SERIAL_ECHO(tmp_extruder);
-      SERIAL_ECHOLN(MSG_INVALID_EXTRUDER);
+      SERIAL_ECHOLNPGM(MSG_INVALID_EXTRUDER);
     }
     else {
       boolean make_move = false;
@@ -2424,7 +2446,7 @@ void process_commands()
       }
       #endif
       SERIAL_ECHO_START;
-      SERIAL_ECHO(MSG_ACTIVE_EXTRUDER);
+      SERIAL_ECHOPGM(MSG_ACTIVE_EXTRUDER);
       SERIAL_PROTOCOLLN((int)active_extruder);
     }
   }
@@ -2857,16 +2879,16 @@ bool setTargetedHotend(int code){
       SERIAL_ECHO_START;
       switch(code){
         case 104:
-          SERIAL_ECHO(MSG_M104_INVALID_EXTRUDER);
+          SERIAL_ECHOPGM(MSG_M104_INVALID_EXTRUDER);
           break;
         case 105:
-          SERIAL_ECHO(MSG_M105_INVALID_EXTRUDER);
+          SERIAL_ECHOPGM(MSG_M105_INVALID_EXTRUDER);
           break;
         case 109:
-          SERIAL_ECHO(MSG_M109_INVALID_EXTRUDER);
+          SERIAL_ECHOPGM(MSG_M109_INVALID_EXTRUDER);
           break;
         case 218:
-          SERIAL_ECHO(MSG_M218_INVALID_EXTRUDER);
+          SERIAL_ECHOPGM(MSG_M218_INVALID_EXTRUDER);
           break;
       }
       SERIAL_ECHOLN(tmp_extruder);
