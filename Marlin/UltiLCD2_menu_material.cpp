@@ -605,7 +605,7 @@ static void lcd_menu_material_import()
 
                     strcpy_P(buffer2, PSTR("retraction_length_"));
                     ptr = buffer2 + strlen(buffer2);
-                    ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr, PSTR("="));
+                    ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr);
                     if (strcmp(buffer, buffer2) == 0)
                     {
                         eeprom_write_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(count, nozzle), atof(c) * EEPROM_RETRACTION_LENGTH_SCALE);
@@ -613,7 +613,7 @@ static void lcd_menu_material_import()
 
                     strcpy_P(buffer2, PSTR("retraction_speed_"));
                     ptr = buffer2 + strlen(buffer2);
-                    ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr, PSTR("="));
+                    ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr);
                     if (strcmp(buffer, buffer2) == 0)
                     {
                         eeprom_write_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(count, nozzle), atof(c) * EEPROM_RETRACTION_SPEED_SCALE);
