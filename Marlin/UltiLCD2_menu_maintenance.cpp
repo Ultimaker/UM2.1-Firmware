@@ -179,7 +179,7 @@ static void lcd_menu_maintenance_advanced()
         {
             char buffer[32];
             enquecommand_P(PSTR("G28 X0 Y0"));
-            sprintf_P(buffer, PSTR("G1 F%i X%i Y%i"), int(homing_feedrate[0]), X_MAX_LENGTH/2, 10);
+            sprintf_P(buffer, PSTR("G1 F%i X%i Y%i"), int(homing_feedrate[0]), int(X_MAX_LENGTH/2), 10);
             enquecommand(buffer);
             
             lcd_change_to_menu_insert_material(lcd_menu_maintenance_advanced_return);
