@@ -101,7 +101,7 @@ static void lcd_menu_material_main()
             minProgress = 0;
             char buffer[32];
             enquecommand_P(PSTR("G28 X0 Y0"));
-            sprintf_P(buffer, PSTR("G1 F%i X%i Y%i"), int(homing_feedrate[0]), X_MAX_LENGTH/2, 10);
+            sprintf_P(buffer, PSTR("G1 F%i X%i Y%i"), int(homing_feedrate[0]), int(X_MAX_LENGTH/2), 10);
             enquecommand(buffer);
             lcd_change_to_menu_change_material(lcd_menu_material_main_return);
         }
@@ -136,7 +136,7 @@ static void lcd_menu_change_material_preheat()
         if ((signed long)(millis() - preheat_end_time) > 0)
         {
             set_extrude_min_temp(0);
-            
+
             plan_set_e_position(0);
             plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], 20.0 / volume_to_filament_length[active_extruder], retract_feedrate/60.0, active_extruder);
 
@@ -177,7 +177,7 @@ static void lcd_menu_change_material_preheat()
     lcd_info_screen(post_change_material_menu, cancelMaterialInsert);
     lcd_lib_draw_stringP(3, 10, PSTR("Heating printhead"));
     lcd_lib_draw_stringP(3, 20, PSTR("for material removal"));
-    
+
     lcd_progressbar(progress);
 
     lcd_lib_update_screen();
@@ -282,12 +282,9 @@ static void lcd_menu_insert_material_preheat()
     int16_t temp = degHotend(active_extruder) - 20;
     int16_t target = degTargetHotend(active_extruder) - 20 - 10;
     if (temp < 0) temp = 0;
-    if (temp > target && temp < target + 20 && !is_command_queued())
+    if (temp > target && temp < target + 20 && (card.pause || !is_command_queued()))
     {
         set_extrude_min_temp(0);
-        for(uint8_t e=0; e<EXTRUDERS; e++)
-            volume_to_filament_length[e] = 1.0;//Set the extrusion to 1mm per given value, so we can move the filament a set distance.
-
         currentMenu = lcd_menu_change_material_insert_wait_user;
         temp = target;
     }
@@ -497,7 +494,7 @@ static void lcd_menu_material_export()
         ptr = buffer + strlen(buffer);
         float_to_string(eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(n)), ptr, PSTR("\n"));
         card.write_string(buffer);
-        
+
         strcpy_P(buffer, PSTR("change_wait="));
         ptr = buffer + strlen(buffer);
         float_to_string(eeprom_read_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(n)), ptr, PSTR("\n\n"));
@@ -608,7 +605,7 @@ static void lcd_menu_material_import()
 
                     strcpy_P(buffer2, PSTR("retraction_length_"));
                     ptr = buffer2 + strlen(buffer2);
-                    ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr, PSTR("="));
+                    ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr);
                     if (strcmp(buffer, buffer2) == 0)
                     {
                         eeprom_write_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(count, nozzle), atof(c) * EEPROM_RETRACTION_LENGTH_SCALE);
@@ -616,7 +613,7 @@ static void lcd_menu_material_import()
 
                     strcpy_P(buffer2, PSTR("retraction_speed_"));
                     ptr = buffer2 + strlen(buffer2);
-                    ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr, PSTR("="));
+                    ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr);
                     if (strcmp(buffer, buffer2) == 0)
                     {
                         eeprom_write_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(count, nozzle), atof(c) * EEPROM_RETRACTION_SPEED_SCALE);
@@ -1116,6 +1113,7 @@ void lcd_material_read_current_material()
 
         material[e].fan_speed = eeprom_read_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
         material[e].diameter = eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
+
         for(uint8_t n=0; n<MAX_MATERIAL_NOZZLE_CONFIGURATIONS; n++)
         {
             material[e].temperature[n] = eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e, n));
