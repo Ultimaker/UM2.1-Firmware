@@ -1381,9 +1381,29 @@ void lcd_material_store_current_material()
     }
 }
 
-bool lcd_material_check_temperature_offset(uint8_t offset)
+bool lcd_material_check_temperature(uint8_t temperature)
 {
-    return offset > HEATER_0_MAXTEMP;
+    return temperature > HEATER_0_MAXTEMP;
+}
+
+bool lcd_material_check_bed_temperature(uint8_t temperature)
+{
+    return temperature > BED_MAXTEMP;
+}
+
+bool lcd_material_check_fanspeed(uint8_t fanspeed)
+{
+    return fanspeed > 100;
+}
+
+bool lcd_material_check_material_flow(uint8_t flow)
+{
+    return flow > 1000;
+}
+
+bool lcd_material_check_material_diameter(uint8_t diameter)
+{
+    return diameter < 0.1 || diameter > 10.0;
 }
 
 bool lcd_material_verify_material_settings()
@@ -1394,19 +1414,17 @@ bool lcd_material_verify_material_settings()
     while(cnt > 0)
     {
         cnt --;
-        if (lcd_material_check_temperature_offset(eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(cnt))))
+        if (lcd_material_check_temperature(eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(cnt))))
             return false;
 #if TEMP_SENSOR_BED != 0
-        if (eeprom_read_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(cnt)) > BED_MAXTEMP)
+        if (lcd_material_check_bed_temperature(eeprom_read_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(cnt))))
             return false;
 #endif
-        if (eeprom_read_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(cnt)) > 100)
+        if (lcd_material_check_fanspeed(eeprom_read_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(cnt))))
             return false;
-        if (eeprom_read_word(EEPROM_MATERIAL_FLOW_OFFSET(cnt)) > 1000)
+        if (lcd_material_check_material_flow(eeprom_read_word(EEPROM_MATERIAL_FLOW_OFFSET(cnt))))
             return false;
-        if (eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(cnt)) > 10.0)
-            return false;
-        if (eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(cnt)) < 0.1)
+        if (lcd_material_check_material_diameter(eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(cnt))))
             return false;
 
         for(uint8_t n=0; n<MATERIAL_NOZZLE_COUNT; n++)
