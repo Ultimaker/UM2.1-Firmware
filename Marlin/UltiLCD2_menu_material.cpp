@@ -1383,7 +1383,7 @@ void lcd_material_store_current_material()
 
 bool lcd_material_check_temperature(uint8_t temperature)
 {
-    return temperature > HEATER_0_MAXTEMP;
+    return temperature == 0 || temperature > HEATER_0_MAXTEMP;
 }
 
 bool lcd_material_check_bed_temperature(uint8_t temperature)
@@ -1404,6 +1404,16 @@ bool lcd_material_check_material_flow(uint8_t flow)
 bool lcd_material_check_material_diameter(uint8_t diameter)
 {
     return diameter < 0.1 || diameter > 10.0;
+}
+
+bool lcd_material_check_retraction_length(uint8_t length)
+{
+    return length > (20 * EEPROM_RETRACTION_LENGTH_SCALE);
+}
+
+bool lcd_material_check_retraction_speed(uint8_t speed)
+{
+    return speed ==0 || speed > (45 * EEPROM_RETRACTION_SPEED_SCALE);
 }
 
 bool lcd_material_verify_material_settings()
@@ -1429,22 +1439,20 @@ bool lcd_material_verify_material_settings()
 
         for(uint8_t n=0; n<MATERIAL_NOZZLE_COUNT; n++)
         {
-            if (eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, n)) > HEATER_0_MAXTEMP)
+            if (lcd_material_check_temperature(eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, n))))
                 return false;
-            if (eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, n)) == 0)
+            if (lcd_material_check_temperature(eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, n))))
                 return false;
 
             //More then 20mm retraction is not a valid value
-            if (eeprom_read_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(cnt, n)) > (20 * EEPROM_RETRACTION_LENGTH_SCALE))
+            if (lcd_material_check_retraction_length(eeprom_read_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(cnt, n))))
                 return false;
             //More then 45mm/s is not a valid value
-            if (eeprom_read_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(cnt, n)) > (45 * EEPROM_RETRACTION_SPEED_SCALE))
-                return false;
-            if (eeprom_read_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(cnt, n)) == 0)
+            if (lcd_material_check_retraction_speed(eeprom_read_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(cnt, n))))
                 return false;
         }
 
-        if (eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(cnt)) > HEATER_0_MAXTEMP || eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(cnt)) < 10)
+        if (lcd_material_check_temperature(eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(cnt))))
         {
             //Invalid temperature for change temperature.
             if (strcmp_P(card.longFilename, PSTR("PLA")) == 0)
