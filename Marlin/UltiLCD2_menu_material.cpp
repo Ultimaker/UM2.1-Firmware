@@ -548,6 +548,9 @@ static void lcd_menu_material_import()
         return;
     }
 
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Start read materials");
+
     char buffer[32];
     uint8_t count = 0xFF;
     while(card.fgets(buffer, sizeof(buffer)) > 0)
@@ -559,6 +562,8 @@ static void lcd_menu_material_import()
         if(strcmp_P(buffer, PSTR("[material]")) == 0)
         {
             count++;
+            SERIAL_ECHO_START;
+            SERIAL_ECHOLNPGM("Adding material");
         }else if (count < EEPROM_MATERIAL_SETTINGS_MAX_COUNT)
         {
             c = strchr(buffer, '=');
@@ -567,18 +572,28 @@ static void lcd_menu_material_import()
                 *c++ = '\0';
                 if (strcmp_P(buffer, PSTR("name")) == 0)
                 {
+                    MSerial.print("Read name: ");
+                    MSerial.println(c);
                     eeprom_write_block(c, EEPROM_MATERIAL_NAME_OFFSET(count), 8);
                 }else if (strcmp_P(buffer, PSTR("temperature")) == 0)
                 {
+                    MSerial.print("Read mat. temperature: ");
+                    MSerial.println(c);
                     eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(count), strtol(c, NULL, 10));
                 }else if (strcmp_P(buffer, PSTR("bed_temperature")) == 0)
                 {
+                    MSerial.print("Read bed temperature: ");
+                    MSerial.println(c);
                     eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(count), strtol(c, NULL, 10));
                 }else if (strcmp_P(buffer, PSTR("fan_speed")) == 0)
                 {
+                    MSerial.print("Read flow: ");
+                    MSerial.println(c);
                     eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(count), strtol(c, NULL, 10));
                 }else if (strcmp_P(buffer, PSTR("flow")) == 0)
                 {
+                    MSerial.print("Read diameter: ");
+                    MSerial.println(c);
                     eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(count), strtol(c, NULL, 10));
                 }else if (strcmp_P(buffer, PSTR("diameter")) == 0)
                 {
@@ -600,6 +615,9 @@ static void lcd_menu_material_import()
                     float_to_string(nozzleIndexToNozzleSize(nozzle), ptr);
                     if (strcmp(buffer, buffer2) == 0)
                     {
+                        MSerial.print(buffer2);
+                        MSerial.print(" = ");
+                        MSerial.println(c);
                         eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(count, nozzle), strtol(c, NULL, 10));
                     }
 
@@ -608,6 +626,9 @@ static void lcd_menu_material_import()
                     ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr);
                     if (strcmp(buffer, buffer2) == 0)
                     {
+                        MSerial.print(buffer2);
+                        MSerial.print(" = ");
+                        MSerial.println(c);
                         eeprom_write_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(count, nozzle), atof(c) * EEPROM_RETRACTION_LENGTH_SCALE);
                     }
 
@@ -616,6 +637,9 @@ static void lcd_menu_material_import()
                     ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr);
                     if (strcmp(buffer, buffer2) == 0)
                     {
+                        MSerial.print(buffer2);
+                        MSerial.print(" = ");
+                        MSerial.println(c);
                         eeprom_write_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(count, nozzle), atof(c) * EEPROM_RETRACTION_SPEED_SCALE);
                     }
                 }
@@ -626,6 +650,8 @@ static void lcd_menu_material_import()
     if (count > 0)
     {
         eeprom_write_byte(EEPROM_MATERIAL_COUNT_OFFSET(), count);
+        MSerial.print("Material count: ");
+        MSerial.println((int)count);
     }
     card.closefile();
 
@@ -697,6 +723,9 @@ static void lcd_material_select_details_callback(uint8_t nr)
 static void lcd_menu_material_select()
 {
     uint8_t count = eeprom_read_byte(EEPROM_MATERIAL_COUNT_OFFSET());
+
+//    MSerial.print("lcd_menu_material_select: Material count: ");
+//    MSerial.println((int)count);
 
     lcd_scroll_menu(PSTR("MATERIAL"), count + 4, lcd_material_select_callback, lcd_material_select_details_callback);
     if (lcd_lib_button_pressed)
@@ -968,6 +997,7 @@ static void lcd_menu_material_retraction_settings_per_nozzle()
 static char* lcd_menu_material_settings_store_callback(uint8_t nr)
 {
     uint8_t count = eeprom_read_byte(EEPROM_MATERIAL_COUNT_OFFSET());
+
     if (nr == 0)
         strcpy_P(card.longFilename, PSTR("< RETURN"));
     else if (nr > count)
@@ -986,6 +1016,7 @@ static void lcd_menu_material_settings_store_details_callback(uint8_t nr)
 static void lcd_menu_material_settings_store()
 {
     uint8_t count = eeprom_read_byte(EEPROM_MATERIAL_COUNT_OFFSET());
+
     if (count == EEPROM_MATERIAL_SETTINGS_MAX_COUNT)
         count--;
     lcd_scroll_menu(PSTR("PRESETS"), 2 + count, lcd_menu_material_settings_store_callback, lcd_menu_material_settings_store_details_callback);
@@ -1010,6 +1041,8 @@ static void lcd_menu_material_settings_store()
 
 void lcd_material_reset_defaults()
 {
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("lcd_material_reset_defaults");
     //Fill in the defaults
     char buffer[8];
 
