@@ -49,6 +49,13 @@ static void lcd_menu_material_temperature_settings();
 static void lcd_menu_material_retraction_settings();
 static void lcd_menu_material_retraction_settings_per_nozzle();
 static void lcd_menu_material_settings_store();
+bool lcd_material_check_temperature(long temperature);
+bool lcd_material_check_bed_temperature(long temperature);
+bool lcd_material_check_fan_speed(long fanspeed);
+bool lcd_material_check_material_flow(long flow);
+bool lcd_material_check_material_diameter(double diameter);
+bool lcd_material_check_retraction_length(float length);
+bool lcd_material_check_retraction_speed(long speed);
 
 static void cancelMaterialInsert()
 {
@@ -580,28 +587,38 @@ static void lcd_menu_material_import()
                     MSerial.print("Read mat. temperature: ");
                     MSerial.println(c);
                     long temperature = strtol(c, NULL, 10);
+                    if(lcd_material_check_temperature(temperature))
+                        temperature = 100;  // TODO EM-1592 insert sane default
                     eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(count), temperature);
                 }else if (strcmp_P(buffer, PSTR("bed_temperature")) == 0)
                 {
                     MSerial.print("Read bed temperature: ");
                     MSerial.println(c);
                     long bed_temperature = strtol(c, NULL, 10);
+                    if(lcd_material_check_bed_temperature(bed_temperature))
+                        bed_temperature = 50;  // TODO EM-1592 insert sane default
                     eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(count), bed_temperature);
                 }else if (strcmp_P(buffer, PSTR("fan_speed")) == 0)
                 {
                     MSerial.print("Read fan speed: ");
                     MSerial.println(c);
                     long fan_speed = strtol(c, NULL, 10);
+                    if(lcd_material_check_fan_speed(fan_speed))
+                        fan_speed = 100; // TODO EM-1592 insert sane default
                     eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(count), fan_speed);
                 }else if (strcmp_P(buffer, PSTR("flow")) == 0)
                 {
                     MSerial.print("Read flow: ");
                     MSerial.println(c);
                     long flow = strtol(c, NULL, 10);
+                    if(lcd_material_check_material_flow(flow))
+                        flow = 100; // TODO EM-1592 insert sane default
                     eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(count), flow);
                 }else if (strcmp_P(buffer, PSTR("diameter")) == 0)
                 {
                     double diameter = strtod(c, NULL);
+                    if(lcd_material_check_material_diameter(diameter))
+                        diameter = 2.85; // TODO EM-1592 insert sane default
                     eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(count), diameter);
 #ifdef USE_CHANGE_TEMPERATURE
                 }else if (strcmp_P(buffer, PSTR("change_temp")) == 0)
@@ -631,6 +648,8 @@ static void lcd_menu_material_import()
                         MSerial.print(" = ");
                         MSerial.println(c);
                         long extra_temperature = strtol(c, NULL, 10);
+                        if(lcd_material_check_temperature(extra_temperature))
+                            extra_temperature = 100; // TODO EM-1592 insert sane default
                         eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(count, nozzle), extra_temperature);
                     }
 
@@ -642,7 +661,10 @@ static void lcd_menu_material_import()
                         MSerial.print(buffer2);
                         MSerial.print(" = ");
                         MSerial.println(c);
+
                         float retraction_length = atof(c) * EEPROM_RETRACTION_LENGTH_SCALE;
+                        if(lcd_material_check_retraction_length(retraction_length))
+                            retraction_length = 5.0f; // TODO EM-1592 insert sane default
                         eeprom_write_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(count, nozzle), retraction_length);
                     }
 
@@ -1389,37 +1411,37 @@ void lcd_material_store_current_material()
     }
 }
 
-bool lcd_material_check_temperature(uint8_t temperature)
+bool lcd_material_check_temperature(long temperature)
 {
     return temperature == 0 || temperature > HEATER_0_MAXTEMP;
 }
 
-bool lcd_material_check_bed_temperature(uint8_t temperature)
+bool lcd_material_check_bed_temperature(long temperature)
 {
     return temperature > BED_MAXTEMP;
 }
 
-bool lcd_material_check_fanspeed(uint8_t fanspeed)
+bool lcd_material_check_fan_speed(long fanspeed)
 {
     return fanspeed > 100;
 }
 
-bool lcd_material_check_material_flow(uint8_t flow)
+bool lcd_material_check_material_flow(long flow)
 {
     return flow > 1000;
 }
 
-bool lcd_material_check_material_diameter(uint8_t diameter)
+bool lcd_material_check_material_diameter(double diameter)
 {
     return diameter < 0.1 || diameter > 10.0;
 }
 
-bool lcd_material_check_retraction_length(uint8_t length)
+bool lcd_material_check_retraction_length(float length)
 {
     return length > (20 * EEPROM_RETRACTION_LENGTH_SCALE);
 }
 
-bool lcd_material_check_retraction_speed(uint8_t speed)
+bool lcd_material_check_retraction_speed(long speed)
 {
     return speed ==0 || speed > (45 * EEPROM_RETRACTION_SPEED_SCALE);
 }
@@ -1438,7 +1460,7 @@ bool lcd_material_verify_material_settings()
         if (lcd_material_check_bed_temperature(eeprom_read_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(cnt))))
             return false;
 #endif
-        if (lcd_material_check_fanspeed(eeprom_read_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(cnt))))
+        if (lcd_material_check_fan_speed(eeprom_read_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(cnt))))
             return false;
         if (lcd_material_check_material_flow(eeprom_read_word(EEPROM_MATERIAL_FLOW_OFFSET(cnt))))
             return false;
