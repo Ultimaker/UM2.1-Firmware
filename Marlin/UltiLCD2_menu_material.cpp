@@ -609,6 +609,13 @@ static void lcd_menu_material_import()
                 }
                 for(uint8_t nozzle=0; nozzle<MATERIAL_NOZZLE_COUNT; nozzle++)
                 {
+                    /*TODO EM-1592:
+                     * if value_OK:
+                     *     write value to EEPROM
+                     * else:
+                     *     write sane default to EEPROM
+                     *     notify user?
+                     */
                     char buffer2[32];
                     strcpy_P(buffer2, PSTR("temperature_"));
                     char* ptr = buffer2 + strlen(buffer2);
@@ -1374,6 +1381,11 @@ void lcd_material_store_current_material()
     }
 }
 
+bool lcd_material_check_temperature_offset(uint8_t offset)
+{
+    return offset > HEATER_0_MAXTEMP;
+}
+
 bool lcd_material_verify_material_settings()
 {
     uint8_t cnt = eeprom_read_byte(EEPROM_MATERIAL_COUNT_OFFSET());
@@ -1382,7 +1394,7 @@ bool lcd_material_verify_material_settings()
     while(cnt > 0)
     {
         cnt --;
-        if (eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(cnt)) > HEATER_0_MAXTEMP)
+        if (lcd_material_check_temperature_offset(eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(cnt))))
             return false;
 #if TEMP_SENSOR_BED != 0
         if (eeprom_read_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(cnt)) > BED_MAXTEMP)
