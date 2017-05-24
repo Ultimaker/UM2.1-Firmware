@@ -579,25 +579,30 @@ static void lcd_menu_material_import()
                 {
                     MSerial.print("Read mat. temperature: ");
                     MSerial.println(c);
-                    eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(count), strtol(c, NULL, 10));
+                    long temperature = strtol(c, NULL, 10);
+                    eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(count), temperature);
                 }else if (strcmp_P(buffer, PSTR("bed_temperature")) == 0)
                 {
                     MSerial.print("Read bed temperature: ");
                     MSerial.println(c);
-                    eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(count), strtol(c, NULL, 10));
+                    long bed_temperature = strtol(c, NULL, 10);
+                    eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(count), bed_temperature);
                 }else if (strcmp_P(buffer, PSTR("fan_speed")) == 0)
+                {
+                    MSerial.print("Read fan speed: ");
+                    MSerial.println(c);
+                    long fan_speed = strtol(c, NULL, 10);
+                    eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(count), fan_speed);
+                }else if (strcmp_P(buffer, PSTR("flow")) == 0)
                 {
                     MSerial.print("Read flow: ");
                     MSerial.println(c);
-                    eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(count), strtol(c, NULL, 10));
-                }else if (strcmp_P(buffer, PSTR("flow")) == 0)
-                {
-                    MSerial.print("Read diameter: ");
-                    MSerial.println(c);
-                    eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(count), strtol(c, NULL, 10));
+                    long flow = strtol(c, NULL, 10);
+                    eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(count), flow);
                 }else if (strcmp_P(buffer, PSTR("diameter")) == 0)
                 {
-                    eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(count), strtod(c, NULL));
+                    double diameter = strtod(c, NULL);
+                    eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(count), diameter);
 #ifdef USE_CHANGE_TEMPERATURE
                 }else if (strcmp_P(buffer, PSTR("change_temp")) == 0)
                 {
@@ -625,7 +630,8 @@ static void lcd_menu_material_import()
                         MSerial.print(buffer2);
                         MSerial.print(" = ");
                         MSerial.println(c);
-                        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(count, nozzle), strtol(c, NULL, 10));
+                        long extra_temperature = strtol(c, NULL, 10);
+                        eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(count, nozzle), extra_temperature);
                     }
 
                     strcpy_P(buffer2, PSTR("retraction_length_"));
@@ -636,7 +642,8 @@ static void lcd_menu_material_import()
                         MSerial.print(buffer2);
                         MSerial.print(" = ");
                         MSerial.println(c);
-                        eeprom_write_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(count, nozzle), atof(c) * EEPROM_RETRACTION_LENGTH_SCALE);
+                        float retraction_length = atof(c) * EEPROM_RETRACTION_LENGTH_SCALE;
+                        eeprom_write_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(count, nozzle), retraction_length);
                     }
 
                     strcpy_P(buffer2, PSTR("retraction_speed_"));
@@ -647,7 +654,8 @@ static void lcd_menu_material_import()
                         MSerial.print(buffer2);
                         MSerial.print(" = ");
                         MSerial.println(c);
-                        eeprom_write_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(count, nozzle), atof(c) * EEPROM_RETRACTION_SPEED_SCALE);
+                        float retraction_speed = atof(c) * EEPROM_RETRACTION_SPEED_SCALE;
+                        eeprom_write_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(count, nozzle), retraction_speed);
                     }
                 }
             }
