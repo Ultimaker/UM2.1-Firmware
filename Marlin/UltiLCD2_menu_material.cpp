@@ -1485,8 +1485,6 @@ bool lcd_material_verify_material_settings()
         {
             if (lcd_material_check_temperature(eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, n))))
                 return false;
-            if (lcd_material_check_temperature(eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, n))))
-                return false;
 
             //More then 20mm retraction is not a valid value
             if (lcd_material_check_retraction_length(eeprom_read_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(cnt, n))))
