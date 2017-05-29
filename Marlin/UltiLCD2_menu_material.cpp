@@ -677,6 +677,10 @@ static void lcd_menu_material_import()
                         MSerial.print(" = ");
                         MSerial.println(c);
                         float retraction_speed = atof(c) * EEPROM_RETRACTION_SPEED_SCALE;
+                        if(lcd_material_check_retraction_speed(retraction_speed)) {
+                            retraction_speed = 45.0f; // TODO EM-1592 insert sane default
+                            MSerial.println("lcd_material_check_retraction_speed found problem");
+                        }
                         eeprom_write_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(count, nozzle), retraction_speed);
                     }
                 }
