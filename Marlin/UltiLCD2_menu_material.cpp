@@ -641,13 +641,6 @@ static void lcd_menu_material_import()
                 }
                 for(uint8_t nozzle=0; nozzle<MATERIAL_NOZZLE_COUNT; nozzle++)
                 {
-                    /*TODO EM-1592:
-                     * if value_OK:
-                     *     write value to EEPROM
-                     * else:
-                     *     write sane default to EEPROM
-                     *     notify user?
-                     */
                     char buffer2[32];
                     strcpy_P(buffer2, PSTR("temperature_"));
                     char* ptr = buffer2 + strlen(buffer2);
