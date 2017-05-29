@@ -579,13 +579,9 @@ static void lcd_menu_material_import()
                 *c++ = '\0';
                 if (strcmp_P(buffer, PSTR("name")) == 0)
                 {
-                    MSerial.print("Read name: ");
-                    MSerial.println(c);
                     eeprom_write_block(c, EEPROM_MATERIAL_NAME_OFFSET(count), 8);
                 }else if (strcmp_P(buffer, PSTR("temperature")) == 0)
                 {
-                    MSerial.print("Read mat. temperature: ");
-                    MSerial.println(c);
                     long temperature = strtol(c, NULL, 10);
                     if(lcd_material_check_temperature(temperature)) {
                         temperature = 210;  // Default copied from PLA
@@ -594,8 +590,6 @@ static void lcd_menu_material_import()
                     }
                     eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(count), temperature);
                 }else if (strcmp_P(buffer, PSTR("bed_temperature")) == 0) {
-                    MSerial.print("Read bed temperature: ");
-                    MSerial.println(c);
                     long bed_temperature = strtol(c, NULL, 10);
                     if (lcd_material_check_bed_temperature(bed_temperature))
                     {
@@ -606,8 +600,6 @@ static void lcd_menu_material_import()
                     eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(count), bed_temperature);
                 }else if (strcmp_P(buffer, PSTR("fan_speed")) == 0)
                 {
-                    MSerial.print("Read fan speed: ");
-                    MSerial.println(c);
                     long fan_speed = strtol(c, NULL, 10);
                     if(lcd_material_check_fan_speed(fan_speed)) {
                         fan_speed = 100; // Default copied from PLA
@@ -617,8 +609,6 @@ static void lcd_menu_material_import()
                     eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(count), fan_speed);
                 }else if (strcmp_P(buffer, PSTR("flow")) == 0)
                 {
-                    MSerial.print("Read flow: ");
-                    MSerial.println(c);
                     long flow = strtol(c, NULL, 10);
                     if(lcd_material_check_material_flow(flow)) {
                         flow = 100; // Default copied from PLA
@@ -653,9 +643,6 @@ static void lcd_menu_material_import()
                     float_to_string(nozzleIndexToNozzleSize(nozzle), ptr);
                     if (strcmp(buffer, buffer2) == 0)
                     {
-                        MSerial.print(buffer2);
-                        MSerial.print(" = ");
-                        MSerial.println(c);
                         long extra_temperature = strtol(c, NULL, 10);
                         if(lcd_material_check_temperature(extra_temperature)) {
                             extra_temperature = 210; // Default copied from PLA
@@ -670,10 +657,6 @@ static void lcd_menu_material_import()
                     ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr);
                     if (strcmp(buffer, buffer2) == 0)
                     {
-                        MSerial.print(buffer2);
-                        MSerial.print(" = ");
-                        MSerial.println(c);
-
                         float retraction_length = atof(c) * EEPROM_RETRACTION_LENGTH_SCALE;
                         if(lcd_material_check_retraction_length(retraction_length)) {
                             retraction_length = 6.5f; // Default copied from PLA
@@ -688,9 +671,6 @@ static void lcd_menu_material_import()
                     ptr = float_to_string(nozzleIndexToNozzleSize(nozzle), ptr);
                     if (strcmp(buffer, buffer2) == 0)
                     {
-                        MSerial.print(buffer2);
-                        MSerial.print(" = ");
-                        MSerial.println(c);
                         float retraction_speed = atof(c) * EEPROM_RETRACTION_SPEED_SCALE;
                         if(lcd_material_check_retraction_speed(retraction_speed)) {
                             retraction_speed = 25.0f; // Default copied from PLA
@@ -707,8 +687,6 @@ static void lcd_menu_material_import()
     if (count > 0)
     {
         eeprom_write_byte(EEPROM_MATERIAL_COUNT_OFFSET(), count);
-        MSerial.print("Material count: ");
-        MSerial.println((int)count);
     }
     card.closefile();
 
