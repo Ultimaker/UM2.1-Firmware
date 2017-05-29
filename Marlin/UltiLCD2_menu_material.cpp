@@ -778,9 +778,6 @@ static void lcd_menu_material_select()
 {
     uint8_t count = eeprom_read_byte(EEPROM_MATERIAL_COUNT_OFFSET());
 
-//    MSerial.print("lcd_menu_material_select: Material count: ");
-//    MSerial.println((int)count);
-
     lcd_scroll_menu(PSTR("MATERIAL"), count + 4, lcd_material_select_callback, lcd_material_select_details_callback);
     if (lcd_lib_button_pressed)
     {
