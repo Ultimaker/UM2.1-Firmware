@@ -1452,11 +1452,13 @@ bool lcd_material_check_material_diameter(double diameter)
 
 bool lcd_material_check_retraction_length(float length)
 {
+    //More than 20mm retraction is not a valid value
     return length > (20 * EEPROM_RETRACTION_LENGTH_SCALE);
 }
 
 bool lcd_material_check_retraction_speed(unsigned long speed)
 {
+    //More than 45mm/s is not a valid value
     return speed ==0 || speed > (45 * EEPROM_RETRACTION_SPEED_SCALE);
 }
 
@@ -1486,10 +1488,8 @@ bool lcd_material_verify_material_settings()
             if (lcd_material_check_temperature(eeprom_read_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(cnt, n))))
                 return false;
 
-            //More then 20mm retraction is not a valid value
             if (lcd_material_check_retraction_length(eeprom_read_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(cnt, n))))
                 return false;
-            //More then 45mm/s is not a valid value
             if (lcd_material_check_retraction_speed(eeprom_read_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(cnt, n))))
                 return false;
         }
