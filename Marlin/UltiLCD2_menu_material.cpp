@@ -569,8 +569,6 @@ static void lcd_menu_material_import()
         if(strcmp_P(buffer, PSTR("[material]")) == 0)
         {
             count++;
-            SERIAL_ECHO_START;
-            SERIAL_ECHOLNPGM("Adding material");
         }else if (count < EEPROM_MATERIAL_SETTINGS_MAX_COUNT)
         {
             c = strchr(buffer, '=');
@@ -580,13 +578,16 @@ static void lcd_menu_material_import()
                 if (strcmp_P(buffer, PSTR("name")) == 0)
                 {
                     eeprom_write_block(c, EEPROM_MATERIAL_NAME_OFFSET(count), 8);
+                    SERIAL_ECHO_START;
+                    SERIAL_ECHOPGM("Adding material ");
+                    SERIAL_ECHOLN(c);
                 }else if (strcmp_P(buffer, PSTR("temperature")) == 0)
                 {
                     long temperature = strtol(c, NULL, 10);
                     if(lcd_material_check_temperature(temperature)) {
                         temperature = 210;  // Default copied from PLA
-                        SERIAL_ECHO_START;
-                        SERIAL_ECHOLNPGM("lcd_material_check_temperature found problem");
+                        SERIAL_ERROR_START;
+                        SERIAL_ERRORLNPGM("lcd_material_check_temperature found problem");
                     }
                     eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(count), temperature);
                 }else if (strcmp_P(buffer, PSTR("bed_temperature")) == 0) {
@@ -594,8 +595,8 @@ static void lcd_menu_material_import()
                     if (lcd_material_check_bed_temperature(bed_temperature))
                     {
                         bed_temperature = 60;  // Default copied from PLA
-                        SERIAL_ECHO_START;
-                        SERIAL_ECHOLNPGM("lcd_material_check_bed_temperature found problem");
+                        SERIAL_ERROR_START;
+                        SERIAL_ERRORLNPGM("lcd_material_check_bed_temperature found problem");
                     }
                     eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(count), bed_temperature);
                 }else if (strcmp_P(buffer, PSTR("fan_speed")) == 0)
@@ -603,8 +604,8 @@ static void lcd_menu_material_import()
                     long fan_speed = strtol(c, NULL, 10);
                     if(lcd_material_check_fan_speed(fan_speed)) {
                         fan_speed = 100; // Default copied from PLA
-                        SERIAL_ECHO_START;
-                        SERIAL_ECHOLNPGM("lcd_material_check_fan_speed found problem");
+                        SERIAL_ERROR_START;
+                        SERIAL_ERRORLNPGM("lcd_material_check_fan_speed found problem");
                     }
                     eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(count), fan_speed);
                 }else if (strcmp_P(buffer, PSTR("flow")) == 0)
@@ -612,8 +613,8 @@ static void lcd_menu_material_import()
                     long flow = strtol(c, NULL, 10);
                     if(lcd_material_check_material_flow(flow)) {
                         flow = 100; // Default copied from PLA
-                        SERIAL_ECHO_START;
-                        SERIAL_ECHOLNPGM("lcd_material_check_material_flow found problem");
+                        SERIAL_ERROR_START;
+                        SERIAL_ERRORLNPGM("lcd_material_check_material_flow found problem");
                     }
                     eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(count), flow);
                 }else if (strcmp_P(buffer, PSTR("diameter")) == 0)
@@ -621,9 +622,8 @@ static void lcd_menu_material_import()
                     double diameter = strtod(c, NULL);
                     if(lcd_material_check_material_diameter(diameter)) {
                         diameter = 2.85; // Default copied from PLA
-                        SERIAL_ECHO_START;
-                        SERIAL_ECHO_START;
-                        SERIAL_ECHOLNPGM("lcd_material_check_material_diameter found problem");
+                        SERIAL_ERROR_START;
+                        SERIAL_ERRORLNPGM("lcd_material_check_material_diameter found problem");
                     }
                     eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(count), diameter);
 #ifdef USE_CHANGE_TEMPERATURE
@@ -646,8 +646,8 @@ static void lcd_menu_material_import()
                         long extra_temperature = strtol(c, NULL, 10);
                         if(lcd_material_check_temperature(extra_temperature)) {
                             extra_temperature = 210; // Default copied from PLA
-                            SERIAL_ECHO_START;
-                            SERIAL_ECHOLNPGM("lcd_material_check_temperature found problem");
+                            SERIAL_ERROR_START;
+                            SERIAL_ERRORLNPGM("lcd_material_check_temperature found problem");
                         }
                         eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(count, nozzle), extra_temperature);
                     }
@@ -660,8 +660,8 @@ static void lcd_menu_material_import()
                         float retraction_length = atof(c) * EEPROM_RETRACTION_LENGTH_SCALE;
                         if(lcd_material_check_retraction_length(retraction_length)) {
                             retraction_length = 6.5f; // Default copied from PLA
-                            SERIAL_ECHO_START;
-                            SERIAL_ECHOLNPGM("lcd_material_check_retraction_length found problem");
+                            SERIAL_ERROR_START;
+                            SERIAL_ERRORLNPGM("lcd_material_check_retraction_length found problem");
                         }
                         eeprom_write_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(count, nozzle), retraction_length);
                     }
@@ -674,8 +674,8 @@ static void lcd_menu_material_import()
                         float retraction_speed = atof(c) * EEPROM_RETRACTION_SPEED_SCALE;
                         if(lcd_material_check_retraction_speed(retraction_speed)) {
                             retraction_speed = 25.0f; // Default copied from PLA
-                            SERIAL_ECHO_START;
-                            SERIAL_ECHOLNPGM("lcd_material_check_retraction_speed found problem");
+                            SERIAL_ERROR_START;
+                            SERIAL_ERRORLNPGM("lcd_material_check_retraction_speed found problem");
                         }
                         eeprom_write_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(count, nozzle), retraction_speed);
                     }
