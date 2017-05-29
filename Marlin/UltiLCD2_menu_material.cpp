@@ -50,13 +50,13 @@ static void lcd_menu_material_temperature_settings();
 static void lcd_menu_material_retraction_settings();
 static void lcd_menu_material_retraction_settings_per_nozzle();
 static void lcd_menu_material_settings_store();
-bool lcd_material_check_temperature(long temperature);
-bool lcd_material_check_bed_temperature(long temperature);
-bool lcd_material_check_fan_speed(long fanspeed);
-bool lcd_material_check_material_flow(long flow);
+bool lcd_material_check_temperature(unsigned long temperature);
+bool lcd_material_check_bed_temperature(unsigned long temperature);
+bool lcd_material_check_fan_speed(unsigned long fanspeed);
+bool lcd_material_check_material_flow(unsigned long flow);
 bool lcd_material_check_material_diameter(double diameter);
 bool lcd_material_check_retraction_length(float length);
-bool lcd_material_check_retraction_speed(long speed);
+bool lcd_material_check_retraction_speed(unsigned long speed);
 
 static void cancelMaterialInsert()
 {
@@ -1425,22 +1425,22 @@ void lcd_material_store_current_material()
     }
 }
 
-bool lcd_material_check_temperature(long temperature)
+bool lcd_material_check_temperature(unsigned long temperature)
 {
     return temperature == 0 || temperature > HEATER_0_MAXTEMP;
 }
 
-bool lcd_material_check_bed_temperature(long temperature)
+bool lcd_material_check_bed_temperature(unsigned long temperature)
 {
     return temperature > BED_MAXTEMP;
 }
 
-bool lcd_material_check_fan_speed(long fanspeed)
+bool lcd_material_check_fan_speed(unsigned long fanspeed)
 {
     return fanspeed > 100;
 }
 
-bool lcd_material_check_material_flow(long flow)
+bool lcd_material_check_material_flow(unsigned long flow)
 {
     return flow > 1000;
 }
@@ -1455,7 +1455,7 @@ bool lcd_material_check_retraction_length(float length)
     return length > (20 * EEPROM_RETRACTION_LENGTH_SCALE);
 }
 
-bool lcd_material_check_retraction_speed(long speed)
+bool lcd_material_check_retraction_speed(unsigned long speed)
 {
     return speed ==0 || speed > (45 * EEPROM_RETRACTION_SPEED_SCALE);
 }
