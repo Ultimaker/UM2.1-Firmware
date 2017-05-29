@@ -172,7 +172,7 @@ private:
     stepperSim* e0;
     stepperSim* e1;
     int e0stepPos, e1stepPos;
-    int map[X_MAX_LENGTH/PRINTER_DOWN_SCALE+1][Y_MAX_LENGTH/PRINTER_DOWN_SCALE+1];
+    int map[int(X_MAX_LENGTH/PRINTER_DOWN_SCALE+1)][int(Y_MAX_LENGTH/PRINTER_DOWN_SCALE+1)];
 public:
     printerSim(stepperSim* x, stepperSim* y, stepperSim* z, stepperSim* e0, stepperSim* e1)
     : x(x), y(y), z(z), e0(e0), e1(e1)
