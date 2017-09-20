@@ -79,7 +79,7 @@ static void abortPrint()
     if (primed)
     {
         // set up the end of print retraction
-        sprintf_P(buffer, PSTR("G92 E%i"), int( ((float)END_OF_PRINT_RETRACTION) / volume_to_filament_length[active_extruder]) - (retracted ? retract_length : 0) );
+        sprintf_P(buffer, PSTR("G92 E%i"), int( (((float)END_OF_PRINT_RETRACTION) - (retracted ? retract_length : 0)) / volume_to_filament_length[active_extruder]) );
         enquecommand(buffer);
         // since we have just parked the filament accounting for the retracted length, forget about any G10/G11 retractions that happened at end of this print.
         retracted = false;
@@ -159,6 +159,8 @@ static void doStartPrint()
         // undo the end-of-print retraction
         plan_set_e_position((0.0 - END_OF_PRINT_RETRACTION) / volume_to_filament_length[e]);
         plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], END_OF_PRINT_RECOVERY_SPEED, e);
+MSerial.print("Undo end-of-print retraction=");
+MSerial.println(END_OF_PRINT_RETRACTION);
 
         // perform additional priming
         plan_set_e_position(-PRIMING_MM3);

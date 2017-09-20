@@ -125,7 +125,14 @@ static void lcd_menu_material_main()
 void lcd_change_to_menu_change_material(menuFunc_t return_menu)
 {
     post_change_material_menu = return_menu;
-    preheat_end_time = millis() + (unsigned long)material[active_extruder].change_preheat_wait_time * 1000L;
+    if (card.pause == true)     // Do not wait the minimum heatup time when we are paused
+    {
+        preheat_end_time = millis();
+    }
+    else
+    {
+        preheat_end_time = millis() + (unsigned long)material[active_extruder].change_preheat_wait_time * 1000L;
+    }
     lcd_change_to_menu(lcd_menu_change_material_preheat);
 }
 
@@ -145,8 +152,11 @@ static void lcd_menu_change_material_preheat()
         {
             set_extrude_min_temp(0);
 
+            //  Do a forward push before pulling back the material, reducing blobs at the end of the filament.
             plan_set_e_position(0);
-            plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], 20.0 / volume_to_filament_length[active_extruder], retract_feedrate/60.0, active_extruder);
+            plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], float(END_OF_PRINT_RETRACTION) / volume_to_filament_length[active_extruder], retract_feedrate/60.0, active_extruder);
+MSerial.print("Change mat, Forward E-pos=");
+MSerial.println(END_OF_PRINT_RETRACTION);
 
             float old_max_feedrate_e = max_feedrate[E_AXIS];
             float old_retract_acceleration = retract_acceleration;
@@ -381,6 +391,8 @@ static void materialInsertReady()
 {
     plan_set_e_position(0);
     plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], -END_OF_PRINT_RETRACTION / volume_to_filament_length[active_extruder], 25*60, active_extruder);
+MSerial.print("Change mat ready, revert E-pos=");
+MSerial.println(-END_OF_PRINT_RETRACTION);
     cancelMaterialInsert();
 }
 

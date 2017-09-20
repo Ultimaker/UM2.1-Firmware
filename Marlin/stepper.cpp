@@ -950,8 +950,11 @@ void quickStop()
   current_position[X_AXIS] = float(st_get_position(X_AXIS)) / axis_steps_per_unit[X_AXIS];
   current_position[Y_AXIS] = float(st_get_position(Y_AXIS)) / axis_steps_per_unit[Y_AXIS];
   current_position[Z_AXIS] = float(st_get_position(Z_AXIS)) / axis_steps_per_unit[Z_AXIS];
-  current_position[E_AXIS] = (float(st_get_position(E_AXIS))/axis_steps_per_unit[E_AXIS])/volume_to_filament_length[active_extruder];
+  current_position[E_AXIS] = (float(st_get_position(E_AXIS)) / axis_steps_per_unit[E_AXIS]) / volume_to_filament_length[active_extruder];
   plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+
+MSerial.print("QuickStop E= ");
+MSerial.println(current_position[E_AXIS]);
 }
 
 void digitalPotWrite(int address, int value) // From Arduino DigitalPotControl example

@@ -2133,6 +2133,8 @@ void process_commands()
 
         target[E_AXIS] -= retract_length/volume_to_filament_length[active_extruder];
         plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], retract_feedrate/60, active_extruder);
+MSerial.print("M601-1 retract to=");
+MSerial.println(target[E_AXIS]);
 
         //lift Z
         if(code_seen('Z'))
@@ -2157,6 +2159,8 @@ void process_commands()
           target[E_AXIS] -= code_value()/volume_to_filament_length[active_extruder];
         }
         plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], retract_feedrate/60, active_extruder);
+MSerial.print("M601-2 retract to=");
+MSerial.println(target[E_AXIS]);
 
         current_position[X_AXIS] = target[X_AXIS];
         current_position[Y_AXIS] = target[Y_AXIS];
@@ -2181,12 +2185,16 @@ void process_commands()
         {
           target[E_AXIS] += code_value()/volume_to_filament_length[active_extruder];
         }
+MSerial.print("M601-3 unretract to=");
+MSerial.println(target[E_AXIS]);
         plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], retract_feedrate/60, active_extruder); //Move back the L feed.
         if (card.sdprinting)    //Only move to the last position if we are still printing. Else we aborted.
         {
             plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], homing_feedrate[X_AXIS]/60, active_extruder); //move xy back
             plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], homing_feedrate[Z_AXIS]/60, active_extruder); //move z back
             plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], lastpos[E_AXIS], retract_feedrate/60, active_extruder); //final untretract
+MSerial.print("M601-4 unretract to=");
+MSerial.println(lastpos[E_AXIS]);
             current_position[X_AXIS] = lastpos[X_AXIS];
             current_position[Y_AXIS] = lastpos[Y_AXIS];
             current_position[Z_AXIS] = lastpos[Z_AXIS];
