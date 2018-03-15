@@ -227,7 +227,7 @@ Install the arduino software IDE/toolset v23 (Some configurations also work with
    http://www.arduino.cc/en/Main/Software
 
 Copy the Marlin firmware
-   https://github.com/Ultimaker/Ultimaker2Marlin
+   https://github.com/Ultimaker/UM2.1-Firmware
    (Use the download button)
 
 The firmware can be built from either the Arduino IDE or from the command line with a make file.
