@@ -29,7 +29,7 @@ struct materialSettings material[EXTRUDERS];
 static menuFunc_t post_change_material_menu;
 static unsigned long preheat_end_time;
 static uint8_t nozzle_select_index;
-static bool material_load_succesful;
+static bool material_load_successful;
 
 void doCooldown();//TODO
 static void lcd_menu_material_main();
@@ -453,7 +453,7 @@ static void lcd_menu_material_export()
         ptr = buffer + strlen(buffer);
         int_to_string(eeprom_read_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(n)), ptr, PSTR("\n"));
         card.write_string(buffer);
-        
+
         for(uint8_t nozzle=0; nozzle<MATERIAL_NOZZLE_COUNT; nozzle++)
         {
             strcpy_P(buffer, PSTR("temperature_"));
@@ -518,7 +518,7 @@ static void lcd_menu_material_import_done()
 {
     lcd_lib_encoder_pos = MAIN_MENU_ITEM_POS(0);
     lcd_info_screen(lcd_menu_material_select, NULL, PSTR("Ok"));
-    if(material_load_succesful)
+    if(material_load_successful)
     {
         lcd_lib_draw_string_centerP(20, PSTR("Loaded materials"));
         lcd_lib_draw_string_centerP(30, PSTR("from the SD card"));
@@ -567,7 +567,7 @@ static void lcd_menu_material_import()
 
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("Start read materials");
-    material_load_succesful = true;  // Set to false during error handling
+    material_load_successful = true;  // Set to false during error handling
 
     char buffer[32];
     uint8_t count = 0xFF;
@@ -599,7 +599,7 @@ static void lcd_menu_material_import()
                         temperature = 210;  // Default copied from PLA
                         SERIAL_ERROR_START;
                         SERIAL_ERRORLNPGM("lcd_material_check_temperature found problem");
-                        material_load_succesful = false;
+                        material_load_successful = false;
                     }
                     eeprom_write_word(EEPROM_MATERIAL_TEMPERATURE_OFFSET(count), temperature);
                 }else if (strcmp_P(buffer, PSTR("bed_temperature")) == 0) {
@@ -609,7 +609,7 @@ static void lcd_menu_material_import()
                         bed_temperature = 60;  // Default copied from PLA
                         SERIAL_ERROR_START;
                         SERIAL_ERRORLNPGM("lcd_material_check_bed_temperature found problem");
-                        material_load_succesful = false;
+                        material_load_successful = false;
                     }
                     eeprom_write_word(EEPROM_MATERIAL_BED_TEMPERATURE_OFFSET(count), bed_temperature);
                 }else if (strcmp_P(buffer, PSTR("fan_speed")) == 0)
@@ -619,7 +619,7 @@ static void lcd_menu_material_import()
                         fan_speed = 100; // Default copied from PLA
                         SERIAL_ERROR_START;
                         SERIAL_ERRORLNPGM("lcd_material_check_fan_speed found problem");
-                        material_load_succesful = false;
+                        material_load_successful = false;
                     }
                     eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(count), fan_speed);
                 }else if (strcmp_P(buffer, PSTR("flow")) == 0)
@@ -629,7 +629,7 @@ static void lcd_menu_material_import()
                         flow = 100; // Default copied from PLA
                         SERIAL_ERROR_START;
                         SERIAL_ERRORLNPGM("lcd_material_check_material_flow found problem");
-                        material_load_succesful = false;
+                        material_load_successful = false;
                     }
                     eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(count), flow);
                 }else if (strcmp_P(buffer, PSTR("diameter")) == 0)
@@ -639,7 +639,7 @@ static void lcd_menu_material_import()
                         diameter = 2.85; // Default copied from PLA
                         SERIAL_ERROR_START;
                         SERIAL_ERRORLNPGM("lcd_material_check_material_diameter found problem");
-                        material_load_succesful = false;
+                        material_load_successful = false;
                     }
                     eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(count), diameter);
 #ifdef USE_CHANGE_TEMPERATURE
@@ -664,7 +664,7 @@ static void lcd_menu_material_import()
                             extra_temperature = 210; // Default copied from PLA
                             SERIAL_ERROR_START;
                             SERIAL_ERRORLNPGM("lcd_material_check_temperature found problem");
-                            material_load_succesful = false;
+                            material_load_successful = false;
                         }
                         eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(count, nozzle), extra_temperature);
                     }
@@ -679,7 +679,7 @@ static void lcd_menu_material_import()
                             retraction_length = 6.5f; // Default copied from PLA
                             SERIAL_ERROR_START;
                             SERIAL_ERRORLNPGM("lcd_material_check_retraction_length found problem");
-                            material_load_succesful = false;
+                            material_load_successful = false;
                         }
                         eeprom_write_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(count, nozzle), retraction_length);
                     }
@@ -694,7 +694,7 @@ static void lcd_menu_material_import()
                             retraction_speed = 25.0f; // Default copied from PLA
                             SERIAL_ERROR_START;
                             SERIAL_ERRORLNPGM("lcd_material_check_retraction_speed found problem");
-                            material_load_succesful = false;
+                            material_load_successful = false;
                         }
                         eeprom_write_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(count, nozzle), retraction_speed);
                     }
@@ -1104,7 +1104,7 @@ void lcd_material_reset_defaults()
     eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(0), 100);
     eeprom_write_word(EEPROM_MATERIAL_FLOW_OFFSET(0), 100);
     eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(0), 2.85);
-    
+
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(0, 0), 210);//0.4
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(0, 1), 195);//0.25
     eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(0, 2), 230);//0.6
@@ -1390,7 +1390,7 @@ void lcd_material_store_material(uint8_t nr)
     for(uint8_t n=0; n<MAX_MATERIAL_NOZZLE_CONFIGURATIONS; n++)
     {
         eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(nr, n), material[active_extruder].temperature[n]);
-        
+
         eeprom_write_word(EEPROM_MATERIAL_EXTRA_RETRACTION_LENGTH_OFFSET(nr, n), material[active_extruder].retraction_length[n] * EEPROM_RETRACTION_LENGTH_SCALE);
         eeprom_write_byte(EEPROM_MATERIAL_EXTRA_RETRACTION_SPEED_OFFSET(nr, n), material[active_extruder].retraction_speed[n] / 60.0 * EEPROM_RETRACTION_SPEED_SCALE);
     }
@@ -1421,7 +1421,7 @@ void lcd_material_read_current_material()
 
         eeprom_read_block(material[e].name, EEPROM_MATERIAL_NAME_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), MATERIAL_NAME_SIZE);
         material[e].name[MATERIAL_NAME_SIZE - 1] = '\0';
-        
+
         material[e].change_temperature = eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
         material[e].change_preheat_wait_time = eeprom_read_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
         if (material[e].change_temperature < 10)
@@ -1557,7 +1557,7 @@ uint8_t nozzleSizeToTemperatureIndex(float nozzle_size)
         return 3;
     if (fabs(nozzle_size - 1.00) < 0.1)
         return 4;
-    
+
     //Default to index 0
     return 0;
 }

@@ -6,8 +6,8 @@ EEPROM structure:
                    Location      Size
 Total:             0x0000-0x1000
 Settings:          0x0064-0x00E0 0x7C? (careful with this one)
-ChangeMatSettings: 0x0410-0x0334 (18*2)=0x24
-ChangeMatSettings: 0x0440-0x0352 (18)=0x12
+ChangeMatSettings: 0x0410-0x0434 (18*2)=0x24
+ChangeMatSettings: 0x0440-0x0452 (18)=0x12
 FirstRunDone:      0x0400-0x0400 0x01
 RuntimeStats:      0x0700-0x071C 0x1C
 Materials:         0x0800-0x09B1 (8+16)*18+1=0x1B1
@@ -36,17 +36,17 @@ struct materialSettings
     float diameter; //Filament diameter in mm
     char name[MATERIAL_NAME_SIZE];
     int16_t change_temperature;      //Temperature for the hotend during the change material procedure.
-    int8_t change_preheat_wait_time; //when reaching the change material temperature, wait for this amount of seconds for the temperature to stabalize and the material to heatup.
+    int8_t change_preheat_wait_time; //when reaching the change material temperature, wait for this amount of seconds for the temperature to stabilize and the material to heatup.
 };
 
 extern struct materialSettings material[EXTRUDERS];
 
-#define FILAMENT_REVERSAL_LENGTH      (FILAMANT_BOWDEN_LENGTH + 50)
+#define FILAMENT_REVERSAL_LENGTH      (FILAMENT_BOWDEN_LENGTH + 50)
 #define FILAMENT_REVERSAL_SPEED       80
 #define FILAMENT_LONG_MOVE_ACCELERATION 20
 #define FILAMENT_LONG_MOVE_JERK       1
 
-#define FILAMENT_FORWARD_LENGTH       (FILAMANT_BOWDEN_LENGTH - 50)
+#define FILAMENT_FORWARD_LENGTH       (FILAMENT_BOWDEN_LENGTH - 50)
 #define FILAMENT_INSERT_SPEED         2     //Initial insert speed to grab the filament.
 #define FILAMENT_INSERT_FAST_SPEED    80    //Speed during the forward length
 #define FILAMENT_INSERT_EXTRUDE_SPEED 1     //Final speed when extruding
@@ -85,7 +85,7 @@ void lcd_material_read_current_material();
 void lcd_material_store_current_material();
 
 // Oh yes, these totally do not belong here. But I need to put them somewhere.
-// Anyhow, these functions convert a nozzle size to an index in the material-temperature setting array or vise-versa.
+// Anyhow, these functions convert a nozzle size to an index in the material-temperature setting array or vice-versa.
 uint8_t nozzleSizeToTemperatureIndex(float nozzle_size);
 float nozzleIndexToNozzleSize(uint8_t nozzle_index);
 
