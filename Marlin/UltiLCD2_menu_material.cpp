@@ -236,8 +236,8 @@ static void lcd_menu_change_material_remove_wait_user()
 
 static char* lcd_menu_change_material_select_material_callback(uint8_t nr)
 {
-    eeprom_read_block(card.longFilename, EEPROM_MATERIAL_NAME_OFFSET(nr), 8);
-    card.longFilename[8] = '\0';
+    eeprom_read_block(card.longFilename, EEPROM_MATERIAL_NAME_OFFSET(nr), MATERIAL_NAME_SIZE);
+    card.longFilename[MATERIAL_NAME_SIZE] = '\0';
     return card.longFilename;
 }
 
@@ -447,8 +447,8 @@ static void lcd_menu_material_export()
 
         strcpy_P(buffer, PSTR("name="));
         char* ptr = buffer + strlen(buffer);
-        eeprom_read_block(ptr, EEPROM_MATERIAL_NAME_OFFSET(n), 8);
-        ptr[8] = '\0';
+        eeprom_read_block(ptr, EEPROM_MATERIAL_NAME_OFFSET(n), MATERIAL_NAME_SIZE);
+        ptr[MATERIAL_NAME_SIZE] = '\0';
         strcat_P(buffer, PSTR("\n"));
         card.write_string(buffer);
 
@@ -573,7 +573,7 @@ static void lcd_menu_material_import()
     material_load_successful = true;  // Set to false during error handling
 
     char buffer[32];
-    uint8_t count = 0xFF;
+    uint8_t count = uint8_t(-1);
     while(card.fgets(buffer, sizeof(buffer)) > 0)
     {
         buffer[sizeof(buffer)-1] = '\0';
@@ -591,7 +591,7 @@ static void lcd_menu_material_import()
                 *c++ = '\0';
                 if (strcmp_P(buffer, PSTR("name")) == 0)
                 {
-                    eeprom_write_block(c, EEPROM_MATERIAL_NAME_OFFSET(count), 8);
+                    eeprom_write_block(c, EEPROM_MATERIAL_NAME_OFFSET(count), MATERIAL_NAME_SIZE);
                     SERIAL_ECHO_START;
                     SERIAL_ECHOPGM("Adding material ");
                     SERIAL_ECHOLN(c);
@@ -727,8 +727,8 @@ static char* lcd_material_select_callback(uint8_t nr)
     else if (nr == count + 3)
         strcpy_P(card.longFilename, PSTR("Import from SD"));
     else{
-        eeprom_read_block(card.longFilename, EEPROM_MATERIAL_NAME_OFFSET(nr - 1), 8);
-        card.longFilename[8] = '\0';
+        eeprom_read_block(card.longFilename, EEPROM_MATERIAL_NAME_OFFSET(nr - 1), MATERIAL_NAME_SIZE);
+        card.longFilename[MATERIAL_NAME_SIZE] = '\0';
     }
     return card.longFilename;
 }
@@ -853,7 +853,7 @@ static void lcd_material_settings_details_callback(uint8_t nr)
     buffer[0] = '\0';
     if (nr == 0)
     {
-        return;
+        strcpy(buffer, material[active_extruder].name);
     }else if (nr == 1)
     {
         // Update meta data; a timer based toggle between two sets of text to show.
@@ -1059,8 +1059,8 @@ static char* lcd_menu_material_settings_store_callback(uint8_t nr)
     else if (nr > count)
         strcpy_P(card.longFilename, PSTR("New preset"));
     else{
-        eeprom_read_block(card.longFilename, EEPROM_MATERIAL_NAME_OFFSET(nr - 1), 8);
-        card.longFilename[8] = '\0';
+        eeprom_read_block(card.longFilename, EEPROM_MATERIAL_NAME_OFFSET(nr - 1), MATERIAL_NAME_SIZE);
+        card.longFilename[MATERIAL_NAME_SIZE] = '\0';
     }
     return card.longFilename;
 }
@@ -1084,9 +1084,9 @@ static void lcd_menu_material_settings_store()
             uint8_t idx = SELECTED_SCROLL_MENU_ITEM() - 1;
             if (idx == count)
             {
-                char buffer[9] = "CUSTOM";
+                char buffer[MATERIAL_NAME_SIZE + 1] = "CUSTOM";
                 int_to_string(idx - 1, buffer + 6);
-                eeprom_write_block(buffer, EEPROM_MATERIAL_NAME_OFFSET(idx), 8);
+                eeprom_write_block(buffer, EEPROM_MATERIAL_NAME_OFFSET(idx), MATERIAL_NAME_SIZE);
                 eeprom_write_byte(EEPROM_MATERIAL_COUNT_OFFSET(), idx + 1);
             }
             lcd_material_store_material(idx);
@@ -1100,7 +1100,7 @@ void lcd_material_reset_defaults()
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("lcd_material_reset_defaults");
     //Fill in the defaults
-    char buffer[8];
+    char buffer[MATERIAL_NAME_SIZE + 1];
 
     strcpy_P(buffer, PSTR("PLA"));
     eeprom_write_block(buffer, EEPROM_MATERIAL_NAME_OFFSET(0), 4);
@@ -1420,7 +1420,7 @@ void lcd_material_store_material(uint8_t nr)
 
     eeprom_write_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(nr), material[active_extruder].fan_speed);
     eeprom_write_float(EEPROM_MATERIAL_DIAMETER_OFFSET(nr), material[active_extruder].diameter);
-    //eeprom_write_block(card.longFilename, EEPROM_MATERIAL_NAME_OFFSET(nr), 8);
+    //eeprom_write_block(card.longFilename, EEPROM_MATERIAL_NAME_OFFSET(nr), MATERIAL_NAME_SIZE);
     for(uint8_t n=0; n<MAX_MATERIAL_NOZZLE_CONFIGURATIONS; n++)
     {
         eeprom_write_word(EEPROM_MATERIAL_EXTRA_TEMPERATURE_OFFSET(nr, n), material[active_extruder].temperature[n]);
@@ -1454,7 +1454,7 @@ void lcd_material_read_current_material()
         }
 
         eeprom_read_block(material[e].name, EEPROM_MATERIAL_NAME_OFFSET(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e), MATERIAL_NAME_SIZE);
-        material[e].name[MATERIAL_NAME_SIZE - 1] = '\0';
+        material[e].name[MATERIAL_NAME_SIZE] = '\0';
 
         material[e].change_temperature = eeprom_read_word(EEPROM_MATERIAL_CHANGE_TEMPERATURE(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
         material[e].change_preheat_wait_time = eeprom_read_byte(EEPROM_MATERIAL_CHANGE_WAIT_TIME(EEPROM_MATERIAL_SETTINGS_MAX_COUNT+e));
