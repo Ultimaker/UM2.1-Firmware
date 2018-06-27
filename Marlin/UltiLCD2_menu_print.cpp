@@ -274,8 +274,8 @@ void lcd_sd_menu_details_callback(uint8_t nr)
                                 LCD_DETAIL_CACHE_NOZZLE_DIAMETER(0) = strtod(buffer + 17, NULL);
                             else if (strncmp_P(buffer, PSTR(";MTYPE:"), 7) == 0)
                             {
-                                strncpy(LCD_DETAIL_CACHE_MATERIAL_TYPE(0), buffer + 7, 8);
-                                LCD_DETAIL_CACHE_MATERIAL_TYPE(0)[7] = '\0';
+                                strncpy(LCD_DETAIL_CACHE_MATERIAL_TYPE(0), buffer + 7, MATERIAL_NAME_SIZE);
+                                LCD_DETAIL_CACHE_MATERIAL_TYPE(0)[MATERIAL_NAME_SIZE] = '\0';
                             }
 #if EXTRUDERS > 1
                             else if (strncmp_P(buffer, PSTR(";MATERIAL2:"), 11) == 0)
@@ -284,8 +284,8 @@ void lcd_sd_menu_details_callback(uint8_t nr)
                                 LCD_DETAIL_CACHE_NOZZLE_DIAMETER(1) = strtod(buffer + 18, NULL);
                             else if (strncmp_P(buffer, PSTR(";MTYPE2:"), 8) == 0)
                             {
-                                strncpy(LCD_DETAIL_CACHE_MATERIAL_TYPE(1), buffer + 8, 8);
-                                LCD_DETAIL_CACHE_MATERIAL_TYPE(1)[7] = '\0';
+                                strncpy(LCD_DETAIL_CACHE_MATERIAL_TYPE(1), buffer + 8, MATERIAL_NAME_SIZE);
+                                LCD_DETAIL_CACHE_MATERIAL_TYPE(1)[MATERIAL_NAME_SIZE] = '\0';
                             }
 #endif
 

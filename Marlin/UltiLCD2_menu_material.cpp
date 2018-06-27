@@ -1085,7 +1085,8 @@ static void lcd_menu_material_settings_store()
             if (idx == count)
             {
                 char buffer[MATERIAL_NAME_SIZE + 1] = "CUSTOM";
-                int_to_string(idx - 1, buffer + 6);
+                int_to_string(idx + 1, buffer + 6);
+                strcpy(material[active_extruder].name, buffer);
                 eeprom_write_block(buffer, EEPROM_MATERIAL_NAME_OFFSET(idx), MATERIAL_NAME_SIZE);
                 eeprom_write_byte(EEPROM_MATERIAL_COUNT_OFFSET(), idx + 1);
             }
@@ -1388,7 +1389,7 @@ void lcd_material_set_material(uint8_t nr, uint8_t e)
     material[e].fan_speed = eeprom_read_byte(EEPROM_MATERIAL_FAN_SPEED_OFFSET(nr));
     material[e].diameter = eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(nr));
     eeprom_read_block(material[e].name, EEPROM_MATERIAL_NAME_OFFSET(nr), MATERIAL_NAME_SIZE);
-    material[e].name[MATERIAL_NAME_SIZE - 1] = '\0';
+    material[e].name[MATERIAL_NAME_SIZE] = '\0';
     strcpy(card.longFilename, material[e].name);
     for(uint8_t n=0; n<MAX_MATERIAL_NOZZLE_CONFIGURATIONS; n++)
     {
