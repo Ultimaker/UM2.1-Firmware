@@ -235,7 +235,6 @@ static void lcd_menu_maintenance_advanced_heatup()
     lcd_lib_clear();
     lcd_lib_draw_string_centerP(20, PSTR("Nozzle temperature:"));
     lcd_lib_draw_string_centerP(53, PSTR("Click to return"));
-    SELECT_MAIN_MENU_ITEM(0);
     char buffer[16];
     int_to_string(int(dsp_temperature[active_extruder]), buffer, PSTR("C/"));
     int_to_string(int(target_temperature[active_extruder]), buffer+strlen(buffer), PSTR("C"));
@@ -265,7 +264,6 @@ void lcd_menu_maintenance_extrude()
     lcd_lib_draw_string_centerP(20, PSTR("Nozzle temperature:"));
     lcd_lib_draw_string_centerP(40, PSTR("Rotate to extrude"));
     lcd_lib_draw_string_centerP(53, PSTR("Click to return"));
-    SELECT_MAIN_MENU_ITEM(0);
     char buffer[16];
     int_to_string(int(dsp_temperature[active_extruder]), buffer, PSTR("C/"));
     int_to_string(int(target_temperature[active_extruder]), buffer+strlen(buffer), PSTR("C"));
@@ -291,7 +289,6 @@ void lcd_menu_maintenance_advanced_bed_heatup()
     lcd_lib_clear();
     lcd_lib_draw_string_centerP(20, PSTR("Buildplate temp.:"));
     lcd_lib_draw_string_centerP(53, PSTR("Click to return"));
-    SELECT_MAIN_MENU_ITEM(0);
     char buffer[16];
     int_to_string(int(dsp_temperature_bed), buffer, PSTR("C/"));
     int_to_string(int(target_temperature_bed), buffer+strlen(buffer), PSTR("C"));

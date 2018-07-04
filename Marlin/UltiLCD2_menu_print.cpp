@@ -869,7 +869,6 @@ void lcd_menu_print_tune_heatup_nozzle0()
     lcd_lib_clear();
     lcd_lib_draw_string_centerP(20, PSTR("Nozzle temperature:"));
     lcd_lib_draw_string_centerP(53, PSTR("Click to return"));
-    SELECT_MAIN_MENU_ITEM(0);
     char buffer[16];
     int_to_string(int(dsp_temperature[0]), buffer, PSTR("C/"));
     int_to_string(int(target_temperature[0]), buffer+strlen(buffer), PSTR("C"));
@@ -894,7 +893,6 @@ void lcd_menu_print_tune_heatup_nozzle1()
     lcd_lib_clear();
     lcd_lib_draw_string_centerP(20, PSTR("Nozzle2 temperature:"));
     lcd_lib_draw_string_centerP(53, PSTR("Click to return"));
-    SELECT_MAIN_MENU_ITEM(0);
     char buffer[16];
     int_to_string(int(dsp_temperature[1]), buffer, PSTR("C/"));
     int_to_string(int(target_temperature[1]), buffer+strlen(buffer), PSTR("C"));
