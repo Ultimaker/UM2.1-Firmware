@@ -246,6 +246,7 @@ static void lcd_menu_change_material_select_material_details_callback(uint8_t nr
     char buffer[32];
     char* c = buffer;
 
+    // Update meta data; a timer based toggle between two sets of text to show.
     if (led_glow_dir)
     {
         c = float_to_string(eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(nr)), c, PSTR("mm"));
@@ -406,7 +407,7 @@ static void lcd_menu_change_material_insert()
 static void lcd_menu_material_export_done()
 {
     lcd_lib_encoder_pos = MAIN_MENU_ITEM_POS(0);
-    lcd_info_screen(lcd_menu_material_select, NULL, PSTR("Ok"));
+    lcd_info_screen(lcd_menu_material_select, NULL, PSTR("OK"));
     lcd_lib_draw_string_centerP(20, PSTR("Saved materials"));
     lcd_lib_draw_string_centerP(30, PSTR("to the SD card"));
     lcd_lib_draw_string_centerP(40, PSTR("in MATERIAL.TXT"));
@@ -519,7 +520,7 @@ static void lcd_menu_material_export()
 static void lcd_menu_material_import_done()
 {
     lcd_lib_encoder_pos = MAIN_MENU_ITEM_POS(0);
-    lcd_info_screen(lcd_menu_material_select, NULL, PSTR("Ok"));
+    lcd_info_screen(lcd_menu_material_select, NULL, PSTR("OK"));
     if(material_load_successful)
     {
         lcd_lib_draw_string_centerP(20, PSTR("Loaded materials"));
@@ -745,6 +746,7 @@ static void lcd_material_select_details_callback(uint8_t nr)
         char* c = buffer;
         nr -= 1;
 
+        // Update meta data; a timer based toggle between two sets of text to show.
         if (led_glow_dir)
         {
             c = float_to_string(eeprom_read_float(EEPROM_MATERIAL_DIAMETER_OFFSET(nr)), c, PSTR("mm"));
@@ -854,7 +856,8 @@ static void lcd_material_settings_details_callback(uint8_t nr)
         return;
     }else if (nr == 1)
     {
-        if (led_glow_dir)
+        // Update meta data; a timer based toggle between two sets of text to show.
+        if (!led_glow_dir)  // Start showing the first nozzle temperatures.
         {
             char* c = buffer;
             for(uint8_t n=0; n<3; n++)
