@@ -853,7 +853,7 @@ static void lcd_material_settings_details_callback(uint8_t nr)
     buffer[0] = '\0';
     if (nr == 0)
     {
-        strcpy(buffer, material[active_extruder].name);
+        strlcpy(buffer, material[active_extruder].name, sizeof(buffer));
     }else if (nr == 1)
     {
         // Update meta data; a timer based toggle between two sets of text to show.
