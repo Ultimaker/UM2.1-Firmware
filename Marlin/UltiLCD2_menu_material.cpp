@@ -594,7 +594,7 @@ static void lcd_menu_material_import()
     material_load_successful = true;  // Set to false during error handling
 
     char buffer[32];
-    uint8_t count = uint8_t(-1);
+    int8_t count = -1;
     while(card.fgets(buffer, sizeof(buffer)) > 0)
     {
         buffer[sizeof(buffer)-1] = '\0';
@@ -603,8 +603,13 @@ static void lcd_menu_material_import()
 
         if(strcmp_P(buffer, PSTR("[material]")) == 0)
         {
+            if (count >= EEPROM_MATERIAL_SETTINGS_MAX_COUNT - 1)
+            {
+                // Maximum number of materials reached. Stop loading.
+                break;
+            }
             count++;
-        }else if (count < EEPROM_MATERIAL_SETTINGS_MAX_COUNT)
+        }else if (count >= 0)
         {
             c = strchr(buffer, '=');
             if (c)
