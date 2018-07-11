@@ -2,6 +2,7 @@
 #define ULTI_LCD2_MENU_PRINT_H
 
 #include "SdFatConfig.h"
+#include "UltiLCD2_menu_material.h"
 
 #define LCD_CACHE_COUNT 6
 
@@ -18,7 +19,7 @@ typedef struct
     uint32_t    time;
     uint32_t    material[EXTRUDERS];
     float       nozzle_diameter[EXTRUDERS];
-    char        material_type[EXTRUDERS][8];
+    char        material_type[EXTRUDERS][MATERIAL_NAME_SIZE + 1];
 } cache_detail_t;
 
 typedef struct

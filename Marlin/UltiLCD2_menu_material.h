@@ -34,7 +34,7 @@ struct materialSettings
     uint8_t fan_speed; //0-100% of requested speed by GCode
     int16_t flow;      //Flow modification in %
     float diameter; //Filament diameter in mm
-    char name[MATERIAL_NAME_SIZE];
+    char name[MATERIAL_NAME_SIZE + 1];
     int16_t change_temperature;      //Temperature for the hotend during the change material procedure.
     int8_t change_preheat_wait_time; //when reaching the change material temperature, wait for this amount of seconds for the temperature to stabilize and the material to heatup.
 };
