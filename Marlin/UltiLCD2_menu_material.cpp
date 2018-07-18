@@ -1113,7 +1113,7 @@ static void lcd_menu_material_settings_store()
             }
             lcd_material_store_material(idx);
         }
-        lcd_change_to_menu(lcd_menu_material_settings, SCROLL_MENU_ITEM_POS(6));
+        lcd_change_to_menu(lcd_menu_material_settings, SCROLL_MENU_ITEM_POS(6 + USE_CHANGE_TEMPERATURE_MENU_OFFSET + BED_MENU_OFFSET));
     }
 }
 
