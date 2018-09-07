@@ -9,7 +9,8 @@ used in 3D printers from many brands. The variant presented here is a fork for u
 The Marlin software was derived from the <a href="https://github.com/kliment/Sprinter">Sprinter</a> and <a href="https://github.com/simen/grbl/tree">grbl</a> projects by Erik van der Zalm.
 Many features have been added by community members like: bkubicek, Lampmaker, Bradley Feldman, and others...
 
-Features:
+Features
+---------
 *   Interrupt based movement with real linear acceleration
 *   High steprate
 *   Look ahead (Keep the speed high when possible. High cornering speed)
@@ -28,8 +29,8 @@ Features:
 
 The default baudrate is 250000. This baudrate has less jitter and hence errors than the usual 115200 baud, but is less supported by drivers and host-environments.
 
-Implemented G Codes:
-====================
+Implemented G Codes
+===================
 
 *  G0  -> G1
 *  G1  - Coordinated Movement X Y Z E
@@ -43,7 +44,7 @@ Implemented G Codes:
 *  G91 - Use Relative Coordinates
 *  G92 - Set current position to cordinates given
 
-Manufacturer Codes
+**Manufacturer Codes**
 *  M0   - Unconditional stop - Without parameters waits for user to press a button on the LCD, otherwise waits S[seconds] or P[miliseconds].
 *  M1   - Same as M0
 *  M17  - Enable/Power all stepper motors
@@ -113,8 +114,8 @@ Manufacturer Codes
 *  M999 - Restart after being stopped by error
 
 
-Configuring and compilation:
-============================
+Configuring and compilation
+===========================
 
 Install the Classic Arduino software IDE/toolset v1.0.5
    https://www.arduino.cc/en/Main/OldSoftwareReleases#1.0.x
@@ -125,7 +126,8 @@ Copy the Marlin firmware
 
 The firmware can be built from either the Arduino IDE or from the command line with a make file.
 
-###To build with the Arduino IDE:
+To build with the Arduino IDE
+-----------------------------
 **One time change (not required when using makefile):**
 Ultimaker made changes to the I2C driver. You will have to remove this driver function from the Arduino IDE by removing the entire TWI_vect interrupt routine (located in arduino/libraries/Wire/utility/twi.c, starting at line 364).
 
