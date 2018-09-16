@@ -14,24 +14,18 @@
 
 #define HEATUP_POSITION_COMMAND "G1 F12000 X5 Y10"
 
-#define LCD_CACHE_COUNT 6
+lcd_cache_t lcd_cache;
 
-#define LCD_DETAIL_CACHE_SIZE (5+8*EXTRUDERS+8*EXTRUDERS)
-#define LCD_CACHE_SIZE (1 + (2 + LONG_FILENAME_LENGTH) * LCD_CACHE_COUNT + LCD_DETAIL_CACHE_SIZE)
+#define LCD_CACHE_NR_OF_FILES()         lcd_cache.nr_of_files
+#define LCD_CACHE_ID(n)                 lcd_cache.file[n].id
+#define LCD_CACHE_TYPE(n)               lcd_cache.file[n].type
+#define LCD_CACHE_FILENAME(n)           lcd_cache.file[n].name
+#define LCD_DETAIL_CACHE_ID()           lcd_cache.detail.id
+#define LCD_DETAIL_CACHE_TIME()         lcd_cache.detail.time
+#define LCD_DETAIL_CACHE_MATERIAL(n)    lcd_cache.detail.material[n]
+#define LCD_DETAIL_CACHE_NOZZLE_DIAMETER(n) lcd_cache.detail.nozzle_diameter[n]
+#define LCD_DETAIL_CACHE_MATERIAL_TYPE(n)   lcd_cache.detail.material_type[n]
 
-uint8_t lcd_cache[LCD_CACHE_SIZE];
-#define LCD_CACHE_NR_OF_FILES() lcd_cache[(LCD_CACHE_COUNT*(LONG_FILENAME_LENGTH+2))]
-#define LCD_CACHE_ID(n) lcd_cache[(n)]
-#define LCD_CACHE_FILENAME(n) ((char*)&lcd_cache[2*LCD_CACHE_COUNT + (n) * LONG_FILENAME_LENGTH])
-#define LCD_CACHE_TYPE(n) lcd_cache[LCD_CACHE_COUNT + (n)]
-#define LCD_DETAIL_CACHE_START ((LCD_CACHE_COUNT*(LONG_FILENAME_LENGTH+2))+1)
-#define LCD_DETAIL_CACHE_ID() lcd_cache[LCD_DETAIL_CACHE_START]
-#define LCD_DETAIL_CACHE_TIME() (*(uint32_t*)&lcd_cache[LCD_DETAIL_CACHE_START+1])
-#define LCD_DETAIL_CACHE_MATERIAL(n) (*(uint32_t*)&lcd_cache[LCD_DETAIL_CACHE_START+5+4*n])
-#define LCD_DETAIL_CACHE_NOZZLE_DIAMETER(n) (*(float*)&lcd_cache[LCD_DETAIL_CACHE_START+5+4*EXTRUDERS+4*n])
-#define LCD_DETAIL_CACHE_MATERIAL_TYPE(n) ((char*)&lcd_cache[LCD_DETAIL_CACHE_START+5+8*EXTRUDERS+8*n])
-
-void doCooldown();//TODO
 static void lcd_menu_print_heatup();
 static void lcd_menu_print_printing();
 static void lcd_menu_print_error_sd();
@@ -79,7 +73,7 @@ static void abortPrint()
     if (primed)
     {
         // set up the end of print retraction
-        sprintf_P(buffer, PSTR("G92 E%i"), int( ((float)END_OF_PRINT_RETRACTION) / volume_to_filament_length[active_extruder]) - (retracted ? retract_length : 0) );
+        sprintf_P(buffer, PSTR("G92 E%i"), int( (((float)END_OF_PRINT_RETRACTION) - (retracted ? retract_length : 0)) / volume_to_filament_length[active_extruder]) );
         enquecommand(buffer);
         // since we have just parked the filament accounting for the retracted length, forget about any G10/G11 retractions that happened at end of this print.
         retracted = false;
@@ -280,8 +274,8 @@ void lcd_sd_menu_details_callback(uint8_t nr)
                                 LCD_DETAIL_CACHE_NOZZLE_DIAMETER(0) = strtod(buffer + 17, NULL);
                             else if (strncmp_P(buffer, PSTR(";MTYPE:"), 7) == 0)
                             {
-                                strncpy(LCD_DETAIL_CACHE_MATERIAL_TYPE(0), buffer + 7, 8);
-                                LCD_DETAIL_CACHE_MATERIAL_TYPE(0)[7] = '\0';
+                                strncpy(LCD_DETAIL_CACHE_MATERIAL_TYPE(0), buffer + 7, MATERIAL_NAME_SIZE);
+                                LCD_DETAIL_CACHE_MATERIAL_TYPE(0)[MATERIAL_NAME_SIZE] = '\0';
                             }
 #if EXTRUDERS > 1
                             else if (strncmp_P(buffer, PSTR(";MATERIAL2:"), 11) == 0)
@@ -290,8 +284,8 @@ void lcd_sd_menu_details_callback(uint8_t nr)
                                 LCD_DETAIL_CACHE_NOZZLE_DIAMETER(1) = strtod(buffer + 18, NULL);
                             else if (strncmp_P(buffer, PSTR(";MTYPE2:"), 8) == 0)
                             {
-                                strncpy(LCD_DETAIL_CACHE_MATERIAL_TYPE(1), buffer + 8, 8);
-                                LCD_DETAIL_CACHE_MATERIAL_TYPE(1)[7] = '\0';
+                                strncpy(LCD_DETAIL_CACHE_MATERIAL_TYPE(1), buffer + 8, MATERIAL_NAME_SIZE);
+                                LCD_DETAIL_CACHE_MATERIAL_TYPE(1)[MATERIAL_NAME_SIZE] = '\0';
                             }
 #endif
 
@@ -767,6 +761,7 @@ static void lcd_menu_print_ready_cooled_down()
         analogWrite(LED_PIN, 0);
     else if (led_mode == LED_MODE_BLINK_ON_DONE)
         analogWrite(LED_PIN, (led_glow << 1) * int(led_brightness_level) / 100);
+    SELECT_MAIN_MENU_ITEM(0);
     lcd_info_screen(lcd_menu_main, postPrintReady, PSTR("BACK TO MENU"));
 
     LED_GLOW();
@@ -930,7 +925,7 @@ static void lcd_menu_print_tune()
 #endif
 #if TEMP_SENSOR_BED != 0
         else if (IS_SELECTED_SCROLL(3 + EXTRUDERS))
-            lcd_change_to_menu(lcd_menu_maintenance_advanced_bed_heatup, 0);//Use the maintainace heatup menu, which shows the current temperature.
+            lcd_change_to_menu(lcd_menu_maintenance_advanced_bed_heatup, 0);//Use the maintenance heatup menu, which shows the current temperature.
 #endif
         else if (IS_SELECTED_SCROLL(3 + BED_MENU_OFFSET + EXTRUDERS))
             LCD_EDIT_SETTING_BYTE_PERCENT(fanSpeed, "Fan speed", "%", 0, 100);

@@ -186,7 +186,7 @@ static void lcd_menu_maintenance_advanced()
             enquecommand_P(PSTR("G28 X Y"));
             sprintf_P(buffer, PSTR("G1 F%i X%i Y%i"), int(homing_feedrate[X_AXIS]), int(X_MAX_LENGTH/2), 10);
             enquecommand(buffer);
-            
+
             lcd_change_to_menu_insert_material(lcd_menu_maintenance_advanced_return);
         }
         else if (IS_SELECTED_SCROLL(6 + BED_MENU_OFFSET + EXTRUDERS))
@@ -242,7 +242,7 @@ static void lcd_menu_maintenance_advanced_heatup()
     lcd_lib_update_screen();
 }
 
-void lcd_menu_maintenance_extrude()
+static void lcd_menu_maintenance_extrude()
 {
     if (lcd_lib_encoder_pos / ENCODER_TICKS_PER_SCROLL_MENU_ITEM != 0)
     {
@@ -297,17 +297,17 @@ void lcd_menu_maintenance_advanced_bed_heatup()
 }
 #endif
 
-void lcd_menu_advanced_version()
+static void lcd_menu_advanced_version()
 {
-    lcd_info_screen(previousMenu, NULL, PSTR("Return"));
+    lcd_info_screen(previousMenu, NULL, PSTR("RETURN"));
     lcd_lib_draw_string_centerP(30, PSTR(STRING_VERSION_CONFIG_H));
     lcd_lib_draw_string_centerP(40, PSTR(STRING_CONFIG_H_AUTHOR));
     lcd_lib_update_screen();
 }
 
-void lcd_menu_advanced_stats()
+static void lcd_menu_advanced_stats()
 {
-    lcd_info_screen(previousMenu, NULL, PSTR("Return"));
+    lcd_info_screen(previousMenu, NULL, PSTR("RETURN"));
     lcd_lib_draw_string_centerP(10, PSTR("Machine on for:"));
     char buffer[LCD_MAX_TEXT_LINE_LENGTH + 1];      // Longest string = "hh:mm Mat:12345678m" = 19 characters + 1
     char* c = int_to_string(lifetime_minutes / 60, buffer, PSTR(":"));
@@ -349,7 +349,7 @@ static void doFactoryReset()
             "ijmp	\n\t"
             );
 #else
-    //TODO
+    #error Unknown chip architecture
 #endif
 }
 
